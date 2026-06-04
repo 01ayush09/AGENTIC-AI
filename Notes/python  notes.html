@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python Proficiency — AI Agent Developer Notes</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ─── TOKENS ─── */
+:root {
+  --bg:        #0b0c0e;
+  --surface:   #13151a;
+  --surface2:  #1a1d24;
+  --border:    #252830;
+  --border2:   #2e323d;
+  --mint:      #5eead4;
+  --amber:     #fbbf24;
+  --violet:    #a78bfa;
+  --rose:      #fb7185;
+  --sky:       #7dd3fc;
+  --text:      #dde1ec;
+  --muted:     #6b728e;
+  --subtle:    #3d4157;
+  --code-bg:   #0d0f14;
+  --ff-head:   'Syne', sans-serif;
+  --ff-body:   'Lora', serif;
+  --ff-code:   'JetBrains Mono', monospace;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--ff-body);
+  font-size:13.5px;
+  line-height:1.78;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* grain */
+body::after{
+  content:'';position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events:none;z-index:9999;opacity:0.35;
+}
+
+/* ─── PROGRESS ─── */
+#pgbar{position:fixed;top:0;left:0;height:2px;width:0%;background:linear-gradient(90deg,var(--mint),var(--violet));z-index:10000;transition:width .1s;}
+
+/* ─── LAYOUT ─── */
+.wrap{max-width:820px;margin:0 auto;padding:48px 24px 96px;}
+
+/* ─── HEADER ─── */
+.masthead{
+  padding:0 0 40px;
+  border-bottom:1px solid var(--border);
+  margin-bottom:44px;
+}
+.masthead .eyebrow{
+  font-family:var(--ff-code);font-size:10px;
+  letter-spacing:.18em;text-transform:uppercase;
+  color:var(--mint);margin-bottom:14px;
+  display:flex;align-items:center;gap:10px;
+}
+.masthead .eyebrow::before{content:'';display:block;width:28px;height:1px;background:var(--mint);}
+.masthead h1{
+  font-family:var(--ff-head);font-size:26px;font-weight:700;
+  color:#fff;line-height:1.15;margin-bottom:10px;
+  letter-spacing:-.01em;
+}
+.masthead h1 span{color:var(--mint);}
+.masthead .desc{
+  font-size:12.5px;color:var(--muted);max-width:480px;line-height:1.65;
+  font-style:italic;
+}
+
+/* ─── TOC ─── */
+.toc{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:18px 22px;
+  margin-bottom:48px;
+}
+.toc-head{
+  font-family:var(--ff-code);font-size:9.5px;
+  color:var(--muted);letter-spacing:.12em;
+  text-transform:uppercase;margin-bottom:14px;
+}
+.toc-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;}
+.toc a{
+  display:flex;align-items:center;gap:10px;
+  padding:6px 4px;font-family:var(--ff-code);
+  font-size:11.5px;color:var(--muted);
+  text-decoration:none;border-bottom:1px dashed var(--border);
+  transition:color .15s;
+}
+.toc a:hover{color:var(--mint);}
+.toc a .n{color:var(--mint);font-size:9.5px;min-width:20px;}
+
+/* ─── SECTION ─── */
+.sec{
+  margin-bottom:56px;
+  opacity:0;transform:translateY(16px);
+  transition:opacity .5s ease,transform .5s ease;
+}
+.sec.visible{opacity:1;transform:none;}
+
+.sec-head{
+  display:flex;align-items:flex-start;gap:14px;
+  padding-bottom:14px;border-bottom:1px solid var(--border);
+  margin-bottom:22px;
+}
+.sec-num{
+  font-family:var(--ff-code);font-size:10px;
+  color:var(--mint);background:rgba(94,234,212,.07);
+  border:1px solid rgba(94,234,212,.18);
+  border-radius:4px;padding:3px 8px;
+  white-space:nowrap;margin-top:4px;
+  flex-shrink:0;
+}
+.sec-title{font-family:var(--ff-head);font-size:18px;font-weight:600;color:#fff;}
+.sec-sub{font-size:11px;color:var(--muted);margin-top:3px;font-family:var(--ff-code);}
+
+/* ─── PILLS ─── */
+.pills{display:flex;flex-wrap:wrap;gap:5px;margin:10px 0 16px;}
+.pill{
+  font-family:var(--ff-code);font-size:9.5px;
+  padding:2px 8px;border-radius:20px;border:1px solid;
+}
+.pm{color:var(--mint);border-color:rgba(94,234,212,.22);background:rgba(94,234,212,.05);}
+.pa{color:var(--amber);border-color:rgba(251,191,36,.22);background:rgba(251,191,36,.05);}
+.pv{color:var(--violet);border-color:rgba(167,139,250,.22);background:rgba(167,139,250,.05);}
+.pr{color:var(--rose);border-color:rgba(251,113,133,.22);background:rgba(251,113,133,.05);}
+.ps{color:var(--sky);border-color:rgba(125,211,252,.22);background:rgba(125,211,252,.05);}
+
+/* ─── CARDS ─── */
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0;}
+.card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:8px;padding:13px 15px;
+}
+.card-t{
+  font-family:var(--ff-code);font-size:9.5px;
+  font-weight:600;letter-spacing:.07em;
+  text-transform:uppercase;margin-bottom:6px;
+}
+.card-t.m{color:var(--mint);}
+.card-t.a{color:var(--amber);}
+.card-t.v{color:var(--violet);}
+.card-t.r{color:var(--rose);}
+.card-t.s{color:var(--sky);}
+.card p{font-size:12.5px;color:var(--text);line-height:1.7;margin:0;}
+
+/* ─── CODE ─── */
+.cb{
+  background:var(--code-bg);
+  border:1px solid var(--border);
+  border-left:2.5px solid var(--mint);
+  border-radius:8px;padding:13px 15px;
+  margin:11px 0;overflow-x:auto;
+}
+.cb pre{
+  font-family:var(--ff-code);font-size:11.5px;
+  line-height:1.65;color:#bfc6db;white-space:pre;
+}
+.kw{color:#a78bfa;}
+.fn{color:#5eead4;}
+.st{color:#fbbf24;}
+.cm{color:#3d4460;font-style:italic;}
+.nm{color:#fb7185;}
+.cl{color:#f0abfc;}
+.dc{color:#fb923c;}
+.bi{color:#7dd3fc;}
+
+code{
+  font-family:var(--ff-code);font-size:11px;
+  background:rgba(94,234,212,.07);color:var(--mint);
+  padding:1px 5px;border-radius:3px;
+}
+
+/* ─── CALLOUTS ─── */
+.note{
+  border-left:2.5px solid;border-radius:0 6px 6px 0;
+  padding:9px 14px;margin:12px 0;font-size:12.5px;
+}
+.note-i{border-color:var(--violet);background:rgba(167,139,250,.06);color:#c4b5fd;}
+.note-w{border-color:var(--amber);background:rgba(251,191,36,.06);color:#d4aa60;}
+.note-t{border-color:var(--mint);background:rgba(94,234,212,.06);color:#7dd3c8;}
+
+/* ─── TABLE ─── */
+table{width:100%;border-collapse:collapse;font-size:12px;margin:12px 0;}
+th{
+  font-family:var(--ff-code);font-size:9.5px;
+  text-transform:uppercase;letter-spacing:.07em;
+  color:var(--muted);border-bottom:1px solid var(--border);
+  padding:6px 10px;text-align:left;
+}
+td{
+  padding:6px 10px;border-bottom:1px dashed var(--border);
+  color:var(--text);vertical-align:top;line-height:1.55;
+}
+tr:last-child td{border-bottom:none;}
+td code{font-size:10.5px;}
+
+/* ─── AGENT CONNECT ─── */
+.ac{
+  background:linear-gradient(120deg,rgba(94,234,212,.04),rgba(167,139,250,.04));
+  border:1px solid rgba(94,234,212,.18);
+  border-radius:8px;padding:13px 16px;
+  margin-top:18px;position:relative;overflow:hidden;
+}
+.ac::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:1.5px;
+  background:linear-gradient(90deg,var(--mint),var(--violet),transparent);
+}
+.ac-label{
+  font-family:var(--ff-code);font-size:9.5px;
+  color:var(--mint);letter-spacing:.1em;
+  text-transform:uppercase;margin-bottom:6px;
+  display:flex;align-items:center;gap:6px;
+}
+.ac-label::before{content:'⟳';font-size:11px;}
+.ac p{font-size:12.5px;color:#9aa3bf;margin:0;line-height:1.7;}
+.ac strong{color:var(--mint);font-weight:500;}
+
+/* ─── FLOW / DIAGRAM helpers ─── */
+.flow{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin:12px 0;}
+.fbox{
+  background:var(--surface2);border:1px solid var(--border2);
+  border-radius:5px;padding:5px 11px;
+  font-family:var(--ff-code);font-size:11px;color:var(--text);
+  white-space:nowrap;
+}
+.fbox.m{border-color:rgba(94,234,212,.3);color:var(--mint);}
+.fbox.a{border-color:rgba(251,191,36,.3);color:var(--amber);}
+.fbox.v{border-color:rgba(167,139,250,.3);color:var(--violet);}
+.fbox.r{border-color:rgba(251,113,133,.3);color:var(--rose);}
+.fbox.s{border-color:rgba(125,211,252,.3);color:var(--sky);}
+.farr{color:var(--subtle);font-size:13px;}
+
+/* ─── SVG diagrams ─── */
+.diag{
+  background:var(--code-bg);border:1px solid var(--border);
+  border-radius:9px;padding:14px;margin:12px 0;overflow-x:auto;
+}
+.diag svg{display:block;margin:0 auto;}
+
+/* ─── GRID helpers ─── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;margin:10px 0;}
+
+/* ─── HR ─── */
+hr.div{border:none;height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent);margin:40px 0;}
+
+/* ─── OOP UML box ─── */
+.uml{background:var(--surface2);border:1px solid var(--border2);border-radius:7px;overflow:hidden;font-size:11.5px;}
+.uml-h{
+  background:rgba(167,139,250,.1);border-bottom:1px solid var(--border2);
+  padding:6px 11px;font-family:var(--ff-code);font-size:10.5px;
+  font-weight:600;color:var(--violet);
+}
+.uml-h.m{background:rgba(94,234,212,.08);color:var(--mint);}
+.uml-h.a{background:rgba(251,191,36,.07);color:var(--amber);}
+.uml-s{padding:7px 11px;border-bottom:1px dashed var(--border);}
+.uml-s:last-child{border-bottom:none;}
+.uml-sl{font-family:var(--ff-code);font-size:8.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px;}
+.uml-i{font-family:var(--ff-code);font-size:11px;color:var(--text);padding:1px 0;}
+.uml-i .sg{color:var(--mint);margin-right:4px;}
+.uml-i .sh{color:var(--amber);margin-right:4px;}
+.uml-i .sr{color:var(--rose);margin-right:4px;}
+
+/* ─── ASYNC timeline ─── */
+.tl{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin:12px 0;}
+.tl-row{display:flex;align-items:center;gap:6px;margin-bottom:7px;}
+.tl-row:last-child{margin-bottom:0;}
+.tl-label{font-family:var(--ff-code);font-size:10px;color:var(--muted);width:80px;flex-shrink:0;}
+.tl-bar{height:20px;border-radius:4px;display:flex;align-items:center;padding:0 8px;font-family:var(--ff-code);font-size:9.5px;color:var(--bg);font-weight:600;}
+.tl-bar.m{background:var(--mint);}
+.tl-bar.v{background:var(--violet);}
+.tl-bar.a{background:var(--amber);}
+.tl-gap{height:20px;width:5px;}
+.tl-note{font-family:var(--ff-code);font-size:10px;margin-left:8px;}
+.tl-note.good{color:var(--mint);}
+.tl-note.bad{color:var(--rose);}
+.tl-head{font-family:var(--ff-code);font-size:9.5px;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin-bottom:10px;}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:560px){
+  .cards,.g2,.g3{grid-template-columns:1fr;}
+  .toc-grid{grid-template-columns:1fr;}
+  .masthead h1{font-size:20px;}
+}
+</style>
+</head>
+<body>
+<div id="pgbar"></div>
+<div class="wrap">
+
+<!-- ══ MASTHEAD ══ -->
+<div class="masthead">
+  <div class="eyebrow">Python Proficiency · AI Agent Developer Series</div>
+  <h1>Intermediate Python<br>for <span>Agent Builders</span></h1>
+  <p class="desc">Detailed notes on every Python concept beyond basics you need — with real connections to how each topic powers AI agent systems.</p>
+</div>
+
+<!-- ══ TOC ══ -->
+<div class="toc">
+  <div class="toc-head">Contents — 9 Topics</div>
+  <div class="toc-grid">
+    <a href="#s1"><span class="n">01</span>Object-Oriented Programming</a>
+    <a href="#s2"><span class="n">02</span>Async / Await</a>
+    <a href="#s3"><span class="n">03</span>Decorators</a>
+    <a href="#s4"><span class="n">04</span>Type Hints</a>
+    <a href="#s5"><span class="n">05</span>Dataclasses</a>
+    <a href="#s6"><span class="n">06</span>Error Handling</a>
+    <a href="#s7"><span class="n">07</span>Iterators &amp; Generators</a>
+    <a href="#s8"><span class="n">08</span>Context Managers</a>
+    <a href="#s9"><span class="n">09</span>Modules &amp; Packaging</a>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════ -->
+<!-- 01  OOP -->
+<!-- ════════════════════════════════════════ -->
+<div class="sec" id="s1">
+  <div class="sec-head">
+    <div class="sec-num">01</div>
+    <div>
+      <div class="sec-title">Object-Oriented Programming</div>
+      <div class="sec-sub">class · __init__ · inheritance · ABC · dunder methods · @property · composition</div>
+    </div>
+  </div>
+
+  <div class="pills">
+    <span class="pill pv">class</span><span class="pill pv">__init__</span><span class="pill pv">inheritance</span>
+    <span class="pill pa">@property</span><span class="pill pa">@abstractmethod</span>
+    <span class="pill pm">__repr__ / __str__</span><span class="pill pr">ABC</span>
+  </div>
+
+  <div class="cards">
+    <div class="card"><div class="card-t m">Definition</div><p>OOP organises code into <em>objects</em> — bundles of data (attributes) and behaviour (methods). A <strong>class</strong> is the blueprint; an <strong>instance</strong> is the real object created from it.</p></div>
+    <div class="card"><div class="card-t a">Objective</div><p>Model complex systems as interacting objects rather than isolated functions. Enables reusability, encapsulation, and clear interfaces between components.</p></div>
+    <div class="card"><div class="card-t v">Reason to use</div><p>Agents are stateful systems. OOP lets you bundle memory, tools, and behaviour into one class — then specialise it through inheritance without rewriting core logic.</p></div>
+    <div class="card"><div class="card-t r">Key concepts</div><p><strong>Encapsulation</strong> — hide internals with <code>_private</code>. <strong>Inheritance</strong> — share base behaviour. <strong>Polymorphism</strong> — same method, different behaviour. <strong>Abstraction</strong> — enforce interfaces via ABC.</p></div>
+  </div>
+
+  <!-- UML diagram -->
+  <div class="diag">
+    <svg viewBox="0 0 680 200" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+      <!-- BaseAgent -->
+      <rect x="10" y="10" width="190" height="178" rx="7" fill="#1a1d24" stroke="#2e323d"/>
+      <rect x="10" y="10" width="190" height="28" rx="7" fill="rgba(167,139,250,.12)" stroke="#2e323d"/>
+      <text x="105" y="29" text-anchor="middle" font-size="11" fill="#a78bfa" font-weight="600">BaseAgent  (ABC)</text>
+      <text x="20" y="56" font-size="9.5" fill="#6b728e" letter-spacing=".05em">ATTRIBUTES</text>
+      <text x="20" y="72" font-size="10" fill="#dde1ec"><tspan fill="#fbbf24">#</tspan> memory: list</text>
+      <text x="20" y="87" font-size="10" fill="#dde1ec"><tspan fill="#fbbf24">#</tspan> model: str</text>
+      <text x="20" y="102" font-size="10" fill="#dde1ec"><tspan fill="#fbbf24">#</tspan> tools: dict</text>
+      <text x="20" y="120" font-size="9.5" fill="#6b728e" letter-spacing=".05em">METHODS</text>
+      <text x="20" y="136" font-size="10" fill="#dde1ec"><tspan fill="#5eead4">+</tspan> run(task) ← abstract</text>
+      <text x="20" y="151" font-size="10" fill="#dde1ec"><tspan fill="#5eead4">+</tspan> remember(msg)</text>
+      <text x="20" y="166" font-size="10" fill="#dde1ec"><tspan fill="#fb7185">-</tspan> _call_llm(p)</text>
+      <text x="20" y="181" font-size="10" fill="#dde1ec"><tspan fill="#5eead4">+</tspan> __repr__</text>
+
+      <!-- arrows -->
+      <line x1="205" y1="90" x2="250" y2="70" stroke="#3d4157" stroke-width="1" stroke-dasharray="4 3"/>
+      <line x1="205" y1="110" x2="250" y2="130" stroke="#3d4157" stroke-width="1" stroke-dasharray="4 3"/>
+      <polygon points="250,62 244,72 256,72" fill="#3d4157"/>
+      <polygon points="250,138 244,128 256,128" fill="#3d4157"/>
+
+      <!-- ResearchAgent -->
+      <rect x="254" y="10" width="190" height="118" rx="7" fill="#1a1d24" stroke="#2e323d"/>
+      <rect x="254" y="10" width="190" height="28" rx="7" fill="rgba(94,234,212,.08)" stroke="#2e323d"/>
+      <text x="349" y="29" text-anchor="middle" font-size="11" fill="#5eead4" font-weight="600">ResearchAgent</text>
+      <text x="264" y="54" font-size="9" fill="#3d4460">↑ extends BaseAgent</text>
+      <text x="264" y="72" font-size="10" fill="#dde1ec"><tspan fill="#5eead4">+</tspan> run(task) → searches</text>
+      <text x="264" y="87" font-size="10" fill="#dde1ec"><tspan fill="#5eead4">+</tspan> cite_sources()</text>
+      <text x="264" y="102" font-size="10" fill="#dde1ec"><tspan fill="#fbbf24">#</tspan> search_depth: int</text>
+
+      <!-- CodingAgent -->
+      <rect x="254" y="82" width="190" height="108" rx="7" fill="#1a1d24" stroke="#2e323d" y="95"/>
+      <rect x="254" y="95" width="190" height="108" rx="7" fill="#1a1d24" stroke="#2e323d"/>
+      <rect x="254" y="95" width="190" height="28" rx="7" fill="rgba(251,191,36,.07)" stroke="#2e323d"/>
+      <text x="349" y="114" text-anchor="middle" font-size="11" fill="#fbbf24" font-weight="600">CodingAgent</text>
+      <text x="264" y="138" font-size="9" fill="#3d4460">↑ extends BaseAgent</text>
+      <text x="264" y="154" font-size="10" fill="#dde1ec"><tspan fill="#5eead4">+</tspan> run(task) → writes code</text>
+      <text x="264" y="169" font-size="10" fill="#dde1ec"><tspan fill="#5eead4">+</tspan> execute_code()</text>
+      <text x="264" y="184" font-size="10" fill="#dde1ec"><tspan fill="#fbbf24">#</tspan> sandbox: str</text>
+
+      <!-- Note -->
+      <rect x="460" y="10" width="210" height="178" rx="7" fill="#0d0f14" stroke="#252830"/>
+      <text x="470" y="30" font-size="9.5" fill="#6b728e" letter-spacing=".06em">KEY DUNDER METHODS</text>
+      <text x="470" y="48" font-size="10" fill="#a78bfa">__init__</text><text x="540" y="48" font-size="10" fill="#6b728e">  constructor</text>
+      <text x="470" y="64" font-size="10" fill="#a78bfa">__repr__</text><text x="540" y="64" font-size="10" fill="#6b728e">  debug string</text>
+      <text x="470" y="80" font-size="10" fill="#a78bfa">__str__</text><text x="536" y="80" font-size="10" fill="#6b728e">   user string</text>
+      <text x="470" y="96" font-size="10" fill="#a78bfa">__len__</text><text x="536" y="96" font-size="10" fill="#6b728e">   length</text>
+      <text x="470" y="112" font-size="10" fill="#a78bfa">__iter__</text><text x="540" y="112" font-size="10" fill="#6b728e">  iteration</text>
+      <text x="470" y="128" font-size="10" fill="#a78bfa">__eq__</text><text x="532" y="128" font-size="10" fill="#6b728e">    equality</text>
+      <text x="470" y="144" font-size="10" fill="#a78bfa">__call__</text><text x="540" y="144" font-size="10" fill="#6b728e">  callable obj</text>
+      <text x="470" y="160" font-size="10" fill="#a78bfa">__enter__</text><text x="548" y="160" font-size="10" fill="#6b728e"> ctx manager</text>
+      <text x="470" y="176" font-size="10" fill="#a78bfa">__exit__</text><text x="540" y="176" font-size="10" fill="#6b728e">  ctx cleanup</text>
+    </svg>
+  </div>
+
+  <div class="cb"><pre><span class="kw">from</span> abc <span class="kw">import</span> ABC, abstractmethod
+<span class="kw">from</span> typing <span class="kw">import</span> Optional
+
+<span class="kw">class</span> <span class="cl">BaseAgent</span>(ABC):
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="bi">self</span>, model: str):
+        <span class="bi">self</span>.model = model
+        <span class="bi">self</span>.memory: list = []           <span class="cm"># instance-level state</span>
+
+    <span class="dc">@abstractmethod</span>                      <span class="cm"># subclass MUST implement this</span>
+    <span class="kw">def</span> <span class="fn">run</span>(<span class="bi">self</span>, task: str) -> str: ...
+
+    <span class="kw">def</span> <span class="fn">remember</span>(<span class="bi">self</span>, msg: dict):
+        <span class="bi">self</span>.memory.append(msg)
+
+    <span class="dc">@property</span>                            <span class="cm"># computed attribute, no ()  </span>
+    <span class="kw">def</span> <span class="fn">turn_count</span>(<span class="bi">self</span>) -> int:
+        <span class="kw">return</span> len(<span class="bi">self</span>.memory)
+
+    <span class="kw">def</span> <span class="fn">__repr__</span>(<span class="bi">self</span>) -> str:
+        <span class="kw">return</span> <span class="st">f"&lt;{type(self).__name__} model={self.model!r}&gt;"</span>
+
+<span class="kw">class</span> <span class="cl">ResearchAgent</span>(<span class="cl">BaseAgent</span>):          <span class="cm"># inherits everything above</span>
+    <span class="kw">def</span> <span class="fn">run</span>(<span class="bi">self</span>, task: str) -> str:
+        <span class="bi">self</span>.remember({<span class="st">"role"</span>: <span class="st">"user"</span>, <span class="st">"content"</span>: task})
+        <span class="kw">return</span> <span class="st">f"Researching: {task}"</span></pre></div>
+
+  <div class="ac">
+    <div class="ac-label">How this connects to AI Agents</div>
+    <p>Every real agent framework (LangChain, LlamaIndex, custom) is OOP at its core. You'll define a <strong>BaseAgent</strong> with shared memory and tool logic, then subclass into specialised agents (research, coding, planning). <strong>Polymorphism</strong> lets you swap different LLM backends without changing orchestration code. <strong>ABC</strong> enforces that every agent subclass implements <code>run()</code> — preventing silent failures at deploy time.</p>
+  </div>
+</div>
+<hr class="div">
+
+
+<!-- ════════════════════════════════════════ -->
+<!-- 02  ASYNC -->
+<!-- ════════════════════════════════════════ -->
+<div class="sec" id="s2">
+  <div class="sec-head">
+    <div class="sec-num">02</div>
+    <div>
+      <div class="sec-title">Async / Await</div>
+      <div class="sec-sub">asyncio · coroutines · event loop · gather · asyncio.Queue · async generators · aiohttp</div>
+    </div>
+  </div>
+
+  <div class="pills">
+    <span class="pill pm">async def</span><span class="pill pm">await</span>
+    <span class="pill pa">asyncio.gather</span><span class="pill pa">asyncio.run</span>
+    <span class="pill pv">aiohttp / httpx</span>
+    <span class="pill pr">asyncio.Queue</span>
+  </div>
+
+  <div class="cards">
+    <div class="card"><div class="card-t m">Definition</div><p>Async lets a <em>single thread</em> handle many tasks concurrently by yielding control while waiting for I/O. <code>async def</code> defines a coroutine; <code>await</code> suspends it until a result arrives.</p></div>
+    <div class="card"><div class="card-t a">Why use it</div><p>LLM API calls take 1–20 s each. Without async, 5 sequential tool calls take 5×. With <code>asyncio.gather</code> all 5 fire in parallel — your agent appears instant to the user.</p></div>
+  </div>
+
+  <!-- Timeline -->
+  <div class="tl">
+    <div class="tl-head">Wall-clock time — sync vs async for 3 LLM calls (~3 s each)</div>
+    <div class="tl-row">
+      <div class="tl-label">SYNC</div>
+      <div class="tl-bar m" style="width:68px">call 1</div>
+      <div class="tl-gap"></div>
+      <div class="tl-bar m" style="width:68px">call 2</div>
+      <div class="tl-gap"></div>
+      <div class="tl-bar m" style="width:68px">call 3</div>
+      <span class="tl-note bad">≈ 9 s</span>
+    </div>
+    <div class="tl-row">
+      <div class="tl-label">ASYNC</div>
+      <div style="display:flex;flex-direction:column;gap:3px;">
+        <div class="tl-bar v" style="width:72px">call 1</div>
+        <div class="tl-bar v" style="width:72px">call 2</div>
+        <div class="tl-bar v" style="width:72px">call 3</div>
+      </div>
+      <span class="tl-note good">≈ 3 s ✓</span>
+    </div>
+  </div>
+
+  <div class="cb"><pre><span class="kw">import</span> asyncio, httpx
+
+<span class="cm"># ── coroutine: single LLM call ──────────────────────────────</span>
+<span class="kw">async def</span> <span class="fn">call_llm</span>(client: httpx.AsyncClient, prompt: str) -> str:
+    resp = <span class="kw">await</span> client.post(<span class="st">"https://api.anthropic.com/v1/messages"</span>,
+                              json={<span class="st">"messages"</span>: [{<span class="st">"role"</span>:<span class="st">"user"</span>,<span class="st">"content"</span>:prompt}]})
+    <span class="kw">return</span> resp.json()[<span class="st">"content"</span>][<span class="nm">0</span>][<span class="st">"text"</span>]
+
+<span class="cm"># ── fire all in parallel with gather ──────────────────────────</span>
+<span class="kw">async def</span> <span class="fn">parallel_tools</span>(prompts: list[str]) -> list[str]:
+    <span class="kw">async with</span> httpx.AsyncClient() <span class="kw">as</span> client:
+        tasks = [call_llm(client, p) <span class="kw">for</span> p <span class="kw">in</span> prompts]
+        <span class="kw">return await</span> asyncio.gather(*tasks)     <span class="cm"># all run simultaneously</span>
+
+asyncio.run(parallel_tools([<span class="st">"summarise"</span>, <span class="st">"translate"</span>, <span class="st">"classify"</span>]))</pre></div>
+
+  <div class="note note-w">
+    <strong>Trap:</strong> never use <code>time.sleep()</code> or <code>requests.get()</code> inside async functions — they block the entire event loop. Use <code>asyncio.sleep()</code> and <code>httpx.AsyncClient</code> / <code>aiohttp</code>.
+  </div>
+
+  <div class="ac">
+    <div class="ac-label">How this connects to AI Agents</div>
+    <p>Every production agent is fully async. When an agent invokes <strong>multiple tools in parallel</strong> (web search + database lookup + code execution), <code>asyncio.gather</code> runs them simultaneously. <strong>Streaming LLM responses</strong> use async generators to forward tokens to the user in real time. The FastAPI server exposing your agent is async. Without this, your agent will be 3–10× slower and unable to handle concurrent users.</p>
+  </div>
+</div>
+<hr class="div">
+
+
+<!-- ════════════════════════════════════════ -->
+<!-- 03  DECORATORS -->
+<!-- ════════════════════════════════════════ -->
+<div class="sec" id="s3">
+  <div class="sec-head">
+    <div class="sec-num">03</div>
+    <div>
+      <div class="sec-title">Decorators</div>
+      <div class="sec-sub">function wrappers · @wraps · @property · @classmethod · @staticmethod · @lru_cache · parameterised decorators</div>
+    </div>
+  </div>
+
+  <div class="pills">
+    <span class="pill pa">@wraps</span><span class="pill pm">@lru_cache</span><span class="pill pv">@property</span>
+    <span class="pill pa">@classmethod</span><span class="pill pr">@tool (LangChain)</span><span class="pill ps">@retry</span>
+  </div>
+
+  <div class="cards">
+    <div class="card"><div class="card-t m">Definition</div><p>A decorator is a function that <em>wraps another function</em>, adding behaviour before/after without modifying the original. <code>@decorator</code> is syntactic sugar for <code>fn = decorator(fn)</code>.</p></div>
+    <div class="card"><div class="card-t a">Why use it</div><p>Cross-cutting concerns (logging, retry, caching, timing) shouldn't pollute business logic. Decorators keep each concern separate and reusable across hundreds of functions.</p></div>
+  </div>
+
+  <!-- Execution flow -->
+  <div class="flow">
+    <div class="fbox">caller()</div>
+    <div class="farr">→</div>
+    <div class="fbox a">decorator: pre-logic</div>
+    <div class="farr">→</div>
+    <div class="fbox m">original fn</div>
+    <div class="farr">→</div>
+    <div class="fbox a">decorator: post-logic</div>
+    <div class="farr">→</div>
+    <div class="fbox">return</div>
+  </div>
+
+  <div class="cb"><pre><span class="kw">import</span> functools, asyncio, logging
+
+<span class="cm"># ── parameterised decorator: exponential-backoff retry ──────</span>
+<span class="kw">def</span> <span class="fn">retry</span>(attempts: int = <span class="nm">3</span>, delay: float = <span class="nm">1.0</span>):
+    <span class="kw">def</span> <span class="fn">decorator</span>(func):
+        <span class="dc">@functools.wraps</span>(func)          <span class="cm"># keeps __name__, __doc__</span>
+        <span class="kw">async def</span> <span class="fn">wrapper</span>(*args, **kw):
+            <span class="kw">for</span> i <span class="kw">in</span> range(attempts):
+                <span class="kw">try</span>:
+                    <span class="kw">return await</span> func(*args, **kw)
+                <span class="kw">except</span> Exception <span class="kw">as</span> e:
+                    <span class="kw">if</span> i == attempts - <span class="nm">1</span>: <span class="kw">raise</span>
+                    <span class="kw">await</span> asyncio.sleep(delay * <span class="nm">2</span>**i)  <span class="cm"># 1s, 2s, 4s…</span>
+        <span class="kw">return</span> wrapper
+    <span class="kw">return</span> decorator
+
+<span class="dc">@retry</span>(attempts=<span class="nm">3</span>, delay=<span class="nm">0.5</span>)
+<span class="kw">async def</span> <span class="fn">call_llm</span>(prompt: str) -> str: ...
+
+<span class="cm"># ── caching decorator: skip duplicate embed API calls ────────</span>
+<span class="kw">from</span> functools <span class="kw">import</span> lru_cache
+
+<span class="dc">@lru_cache</span>(maxsize=<span class="nm">512</span>)
+<span class="kw">def</span> <span class="fn">embed</span>(text: str) -> list[float]:
+    <span class="kw">return</span> embedding_model.encode(text)  <span class="cm"># only called once per unique text</span></pre></div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="card-t v">@property</div>
+      <div class="cb" style="margin:6px 0 0;"><pre><span class="kw">class</span> <span class="cl">Agent</span>:
+    <span class="dc">@property</span>
+    <span class="kw">def</span> <span class="fn">ctx_used</span>(<span class="bi">self</span>):
+        <span class="kw">return</span> sum(
+          len(m[<span class="st">"content"</span>])
+          <span class="kw">for</span> m <span class="kw">in</span> <span class="bi">self</span>.memory
+        )
+<span class="cm"># a.ctx_used  ← no parentheses</span></pre></div>
+    </div>
+    <div class="card">
+      <div class="card-t a">@classmethod vs @staticmethod</div>
+      <div class="cb" style="margin:6px 0 0;"><pre><span class="kw">class</span> <span class="cl">Agent</span>:
+    <span class="dc">@classmethod</span>
+    <span class="kw">def</span> <span class="fn">from_config</span>(cls, cfg):
+        <span class="kw">return</span> cls(cfg[<span class="st">"model"</span>])  <span class="cm"># factory</span>
+
+    <span class="dc">@staticmethod</span>
+    <span class="kw">def</span> <span class="fn">count_tokens</span>(text):
+        <span class="kw">return</span> len(text.split())</pre></div>
+    </div>
+  </div>
+
+  <div class="ac">
+    <div class="ac-label">How this connects to AI Agents</div>
+    <p>Agent frameworks register callable tools with a <strong><code>@tool</code></strong> decorator — it marks a function as LLM-invokable and auto-generates the JSON schema the model needs. <strong>Retry decorators</strong> silently handle Anthropic/OpenAI rate limits. <strong><code>@lru_cache</code></strong> prevents redundant embedding API calls in RAG pipelines. Logging decorators add full observability to every LLM call without touching business logic.</p>
+  </div>
+</div>
+<hr class="div">
+
+
+<!-- ════════════════════════════════════════ -->
+<!-- 04  TYPE HINTS -->
+<!-- ════════════════════════════════════════ -->
+<div class="sec" id="s4">
+  <div class="sec-head">
+    <div class="sec-num">04</div>
+    <div>
+      <div class="sec-title">Type Hints</div>
+      <div class="sec-sub">annotations · Union · Optional · Literal · TypedDict · Generic · Protocol · mypy</div>
+    </div>
+  </div>
+
+  <div class="pills">
+    <span class="pill pm">str | None</span><span class="pill pm">list[dict]</span>
+    <span class="pill pa">TypedDict</span><span class="pill pa">Literal</span>
+    <span class="pill pv">Generic[T]</span><span class="pill pr">Protocol</span><span class="pill ps">mypy</span>
+  </div>
+
+  <div class="cards">
+    <div class="card"><div class="card-t m">Definition</div><p>Type hints annotate variables and function signatures with expected types. Python doesn't enforce them at runtime, but <code>mypy</code>, IDEs, and Pydantic use them to catch shape mismatches before execution.</p></div>
+    <div class="card"><div class="card-t a">Why use them</div><p>Agent code passes deeply nested structures (tool schemas, LLM responses, config) through many layers. Hints make intent explicit, enable autocomplete, and prevent entire classes of runtime KeyError / AttributeError.</p></div>
+  </div>
+
+  <div class="cb"><pre><span class="kw">from</span> typing <span class="kw">import</span> TypedDict, Literal, Optional, Protocol
+
+<span class="cm"># TypedDict — typed shape for dicts (no class overhead)</span>
+<span class="kw">class</span> <span class="cl">Message</span>(TypedDict):
+    role: Literal[<span class="st">"user"</span>, <span class="st">"assistant"</span>, <span class="st">"system"</span>]  <span class="cm"># only these 3 strings</span>
+    content: str
+
+<span class="cm"># Protocol — structural typing: any object with .run() qualifies</span>
+<span class="kw">class</span> <span class="cl">Runnable</span>(Protocol):
+    <span class="kw">def</span> <span class="fn">run</span>(<span class="bi">self</span>, task: str) -> str: ...
+
+<span class="cm"># Generic — parameterised container</span>
+<span class="kw">from</span> typing <span class="kw">import</span> Generic, TypeVar
+T = TypeVar(<span class="st">"T"</span>)
+
+<span class="kw">class</span> <span class="cl">MemoryStore</span>(Generic[T]):
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="bi">self</span>): <span class="bi">self</span>._items: list[T] = []
+    <span class="kw">def</span> <span class="fn">add</span>(<span class="bi">self</span>, item: T): <span class="bi">self</span>._items.append(item)
+    <span class="kw">def</span> <span class="fn">get_all</span>(<span class="bi">self</span>) -> list[T]: <span class="kw">return</span> <span class="bi">self</span>._items
+
+msg_store: MemoryStore[Message] = MemoryStore()  <span class="cm"># fully typed</span></pre></div>
+
+  <table>
+    <tr><th>Hint</th><th>Meaning</th><th>Agent use case</th></tr>
+    <tr><td><code>str | None</code></td><td>string or null</td><td>optional system prompt</td></tr>
+    <tr><td><code>Literal["user","assistant"]</code></td><td>exact allowed values</td><td>restrict message role field</td></tr>
+    <tr><td><code>TypedDict</code></td><td>dict with typed keys</td><td>LLM message / tool schema shape</td></tr>
+    <tr><td><code>Protocol</code></td><td>structural subtyping</td><td>accept any class with <code>.run()</code></td></tr>
+    <tr><td><code>Generic[T]</code></td><td>parameterised container</td><td>typed memory / result store</td></tr>
+  </table>
+
+  <div class="ac">
+    <div class="ac-label">How this connects to AI Agents</div>
+    <p>Pydantic — the backbone of FastAPI, LangChain tool schemas, and structured LLM output parsing — <strong>is entirely built on type hints</strong>. Every tool schema, agent config, and LLM response model you define will use TypedDict or Pydantic <code>BaseModel</code>. <code>Literal</code> restricts role fields to exactly <code>"user"</code>/<code>"assistant"</code>. <code>Protocol</code> lets you write an orchestrator that works with any LLM backend without coupling to a concrete class — swap Anthropic for OpenAI with zero orchestration changes.</p>
+  </div>
+</div>
+<hr class="div">
+
+
+<!-- ════════════════════════════════════════ -->
+<!-- 05  DATACLASSES -->
+<!-- ════════════════════════════════════════ -->
+<div class="sec" id="s5">
+  <div class="sec-head">
+    <div class="sec-num">05</div>
+    <div>
+      <div class="sec-title">Dataclasses</div>
+      <div class="sec-sub">@dataclass · field() · frozen · __post_init__ · Pydantic BaseModel</div>
+    </div>
+  </div>
+
+  <div class="pills">
+    <span class="pill pm">@dataclass</span><span class="pill pa">field(default_factory)</span>
+    <span class="pill pv">frozen=True</span><span class="pill pr">Pydantic BaseModel</span><span class="pill ps">__post_init__</span>
+  </div>
+
+  <div class="cards">
+    <div class="card"><div class="card-t m">Definition</div><p>The <code>@dataclass</code> decorator auto-generates <code>__init__</code>, <code>__repr__</code>, and <code>__eq__</code> from class-level annotations — eliminating boilerplate for data-holding objects.</p></div>
+    <div class="card"><div class="card-t a">Why use it</div><p>Agent configs, tool definitions, and structured outputs need clean, readable classes. Dataclasses give you typed, documented, printable objects in half the lines of a regular class.</p></div>
+  </div>
+
+  <!-- comparison diagram -->
+  <div class="diag">
+    <svg viewBox="0 0 680 130" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace" font-size="10">
+      <rect x="10" y="10" width="310" height="110" rx="7" fill="#1a1d24" stroke="#2e323d"/>
+      <rect x="10" y="10" width="310" height="24" rx="7" fill="rgba(251,113,133,.1)" stroke="#2e323d"/>
+      <text x="165" y="27" text-anchor="middle" font-size="10.5" fill="#fb7185" font-weight="600">Without @dataclass  (boilerplate)</text>
+      <text x="20" y="48" fill="#6b728e">class AgentConfig:</text>
+      <text x="20" y="63" fill="#6b728e">  def __init__(self, model, tokens):</text>
+      <text x="20" y="78" fill="#6b728e">    self.model  = model</text>
+      <text x="20" y="93" fill="#6b728e">    self.tokens = tokens</text>
+      <text x="20" y="108" fill="#6b728e">  def __repr__(self): ...</text>
+
+      <text x="340" y="70" text-anchor="middle" font-size="18" fill="#3d4157">→</text>
+
+      <rect x="360" y="10" width="310" height="110" rx="7" fill="#1a1d24" stroke="#2e323d"/>
+      <rect x="360" y="10" width="310" height="24" rx="7" fill="rgba(94,234,212,.08)" stroke="#2e323d"/>
+      <text x="515" y="27" text-anchor="middle" font-size="10.5" fill="#5eead4" font-weight="600">With @dataclass  (clean)</text>
+      <text x="370" y="48" fill="#a78bfa">@dataclass</text>
+      <text x="370" y="63" fill="#dde1ec">class <tspan fill="#f0abfc">AgentConfig</tspan>:</text>
+      <text x="370" y="78" fill="#dde1ec">  model:  str  = <tspan fill="#fbbf24">"claude-sonnet-4"</tspan></text>
+      <text x="370" y="93" fill="#dde1ec">  tokens: int  = <tspan fill="#fb7185">1024</tspan></text>
+      <text x="370" y="112" fill="#5eead4">✓ __init__  __repr__  __eq__  free</text>
+    </svg>
+  </div>
+
+  <div class="cb"><pre><span class="kw">from</span> dataclasses <span class="kw">import</span> dataclass, field
+<span class="kw">from</span> typing <span class="kw">import</span> Optional
+
+<span class="dc">@dataclass</span>
+<span class="kw">class</span> <span class="cl">AgentConfig</span>:
+    model:         str            = <span class="st">"claude-sonnet-4-20250514"</span>
+    max_tokens:    int            = <span class="nm">1024</span>
+    temperature:   float          = <span class="nm">0.7</span>
+    tools:         list[str]      = field(default_factory=list)  <span class="cm"># ← NEVER use [] as default!</span>
+    system_prompt: Optional[str]  = None
+
+    <span class="kw">def</span> <span class="fn">__post_init__</span>(<span class="bi">self</span>):           <span class="cm"># runs after __init__ for validation</span>
+        <span class="kw">if</span> <span class="bi">self</span>.temperature < <span class="nm">0</span> <span class="kw">or</span> <span class="bi">self</span>.temperature > <span class="nm">2</span>:
+            <span class="kw">raise</span> ValueError(<span class="st">"temperature must be 0–2"</span>)
+
+<span class="dc">@dataclass</span>(frozen=<span class="nm">True</span>)             <span class="cm"># immutable — safe as dict key / hashable</span>
+<span class="kw">class</span> <span class="cl">ToolCall</span>:
+    name:      str
+    arguments: tuple               <span class="cm"># frozen requires all fields be immutable</span></pre></div>
+
+  <div class="note note-t">
+    <strong>Pydantic BaseModel</strong> = dataclass + runtime validation. Use it when parsing data from external sources (LLM JSON output, API responses). Use plain <code>@dataclass</code> for internal config you fully control.
+  </div>
+
+  <div class="ac">
+    <div class="ac-label">How this connects to AI Agents</div>
+    <p>Every agent config, tool definition, and structured LLM response is a dataclass or Pydantic model. When you use <strong>structured output mode</strong> (asking the LLM to return JSON matching a schema), you define a Pydantic model and the response parses directly into it — typed, validated, documented. <strong>FastAPI</strong> uses Pydantic for request/response schemas. <strong>LangChain</strong> uses it for tool argument definitions. Dataclasses are also the backbone of <strong>message history</strong> serialisation in checkpointed agents.</p>
+  </div>
+</div>
+<hr class="div">
+
+
+<!-- ════════════════════════════════════════ -->
+<!-- 06  ERROR HANDLING -->
+<!-- ════════════════════════════════════════ -->
+<div class="sec" id="s6">
+  <div class="sec-head">
+    <div class="sec-num">06</div>
+    <div>
+      <div class="sec-title">Error Handling</div>
+      <div class="sec-sub">try/except/else/finally · custom exceptions · re-raise · logging · contextlib.suppress</div>
+    </div>
+  </div>
+
+  <div class="pills">
+    <span class="pill pr">try / except</span><span class="pill pr">raise</span>
+    <span class="pill pa">custom Exception</span><span class="pill pm">finally</span>
+    <span class="pill pv">logging.exception</span><span class="pill ps">contextlib.suppress</span>
+  </div>
+
+  <div class="cards">
+    <div class="card"><div class="card-t m">Definition</div><p>Error handling anticipates failures and responds gracefully. Python uses <code>try/except/else/finally</code> blocks. Custom exception classes form hierarchies that let callers handle errors at the right granularity.</p></div>
+    <div class="card"><div class="card-t a">Why use it</div><p>Agents fail constantly in production: rate limits, malformed LLM JSON, tool timeouts, context overflow. Without structured error handling the whole agent crashes on the first hiccup.</p></div>
+  </div>
+
+  <!-- Exception hierarchy diagram -->
+  <div class="diag">
+    <svg viewBox="0 0 640 120" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace" font-size="10">
+      <!-- root -->
+      <rect x="260" y="10" width="120" height="26" rx="5" fill="rgba(167,139,250,.15)" stroke="#a78bfa" stroke-width="1"/>
+      <text x="320" y="27" text-anchor="middle" font-size="10" fill="#a78bfa" font-weight="600">AgentError</text>
+      <!-- lines -->
+      <line x1="200" y1="36" x2="100" y2="60" stroke="#3d4157" stroke-width="1"/>
+      <line x1="270" y1="36" x2="210" y2="60" stroke="#3d4157" stroke-width="1"/>
+      <line x1="350" y1="36" x2="380" y2="60" stroke="#3d4157" stroke-width="1"/>
+      <line x1="420" y1="36" x2="510" y2="60" stroke="#3d4157" stroke-width="1"/>
+      <!-- children -->
+      <rect x="30" y="60" width="130" height="24" rx="5" fill="#1a1d24" stroke="#2e323d"/>
+      <text x="95" y="76" text-anchor="middle" font-size="9.5" fill="#fb7185">RateLimitError</text>
+      <rect x="170" y="60" width="110" height="24" rx="5" fill="#1a1d24" stroke="#2e323d"/>
+      <text x="225" y="76" text-anchor="middle" font-size="9.5" fill="#fbbf24">LLMError</text>
+      <rect x="330" y="60" width="100" height="24" rx="5" fill="#1a1d24" stroke="#2e323d"/>
+      <text x="380" y="76" text-anchor="middle" font-size="9.5" fill="#5eead4">ToolError</text>
+      <rect x="445" y="60" width="165" height="24" rx="5" fill="#1a1d24" stroke="#2e323d"/>
+      <text x="527" y="76" text-anchor="middle" font-size="9.5" fill="#7dd3fc">ContextOverflowError</text>
+      <!-- grandchild -->
+      <line x1="95" y1="84" x2="95" y2="96" stroke="#3d4157" stroke-width="1"/>
+      <rect x="30" y="96" width="130" height="20" rx="4" fill="#13151a" stroke="#252830"/>
+      <text x="95" y="110" text-anchor="middle" font-size="9" fill="#fb7185" opacity=".7">retry_after: int</text>
+    </svg>
+  </div>
+
+  <div class="cb"><pre><span class="kw">class</span> <span class="cl">AgentError</span>(Exception): ...
+<span class="kw">class</span> <span class="cl">RateLimitError</span>(<span class="cl">AgentError</span>):
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="bi">self</span>, retry_after: int):
+        <span class="bi">self</span>.retry_after = retry_after
+        super().__init__(<span class="st">f"Rate limited – retry after {retry_after}s"</span>)
+
+<span class="kw">async def</span> <span class="fn">safe_llm_call</span>(prompt: str) -> str:
+    <span class="kw">try</span>:
+        <span class="kw">return await</span> call_llm(prompt)
+    <span class="kw">except</span> <span class="cl">RateLimitError</span> <span class="kw">as</span> e:
+        <span class="kw">await</span> asyncio.sleep(e.retry_after)
+        <span class="kw">return await</span> safe_llm_call(prompt)       <span class="cm"># retry once</span>
+    <span class="kw">except</span> <span class="cl">ContextOverflowError</span>:
+        truncate_memory()                          <span class="cm"># shed oldest messages</span>
+        <span class="kw">return await</span> safe_llm_call(prompt)
+    <span class="kw">except</span> <span class="cl">AgentError</span>:
+        logging.exception(<span class="st">"unhandled agent error"</span>) <span class="cm"># logs full traceback</span>
+        <span class="kw">raise</span>                                      <span class="cm"># re-raise: don't swallow</span>
+    <span class="kw">finally</span>:
+        logging.debug(<span class="st">"LLM call attempt finished"</span>) <span class="cm"># always runs</span></pre></div>
+
+  <div class="note note-i">
+    <strong>Rule:</strong> every <code>except</code> block should either <em>recover</em> (retry, truncate, fallback) or <em>re-raise</em> with added context. Silent swallowing of exceptions is the #1 cause of mysterious agent failures.
+  </div>
+
+  <div class="ac">
+    <div class="ac-label">How this connects to AI Agents</div>
+    <p>Production agents fail in many ways simultaneously. <strong>Custom exception hierarchies</strong> let you handle each failure class differently: retry rate limits, truncate on context overflow, log and skip on tool errors. You'll wrap every LLM API call, tool execution, and vector DB query in structured try/except. Agents that don't handle errors gracefully appear broken to users after the very first rate limit — which happens constantly at scale.</p>
+  </div>
+</div>
+<hr class="div">
+
+
+<!-- ════════════════════════════════════════ -->
+<!-- 07  ITERATORS & GENERATORS -->
+<!-- ════════════════════════════════════════ -->
+<div class="sec" id="s7">
+  <div class="sec-head">
+    <div class="sec-num">07</div>
+    <div>
+      <div class="sec-title">Iterators &amp; Generators</div>
+      <div class="sec-sub">yield · yield from · generator expressions · async generators · itertools · __iter__ / __next__</div>
+    </div>
+  </div>
+
+  <div class="pills">
+    <span class="pill pm">yield</span><span class="pill pm">yield from</span>
+    <span class="pill pa">async for</span><span class="pill pv">itertools</span>
+    <span class="pill pr">__iter__ / __next__</span>
+  </div>
+
+  <div class="cards">
+    <div class="card"><div class="card-t m">Definition</div><p>A <em>generator</em> is a function that produces values lazily using <code>yield</code>. It pauses execution between yields — computing one value at a time without building the whole result in memory.</p></div>
+    <div class="card"><div class="card-t a">Why use it</div><p>LLM responses stream token-by-token. Users must see output immediately — not after the full response. Async generators model this perfectly: <code>yield</code> each token as it arrives from the API stream.</p></div>
+  </div>
+
+  <!-- lazy vs eager diagram -->
+  <div class="diag">
+    <svg viewBox="0 0 640 90" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace" font-size="10">
+      <rect x="10" y="10" width="295" height="70" rx="7" fill="#1a1d24" stroke="#2e323d"/>
+      <rect x="10" y="10" width="295" height="22" rx="7" fill="rgba(251,113,133,.1)" stroke="#2e323d"/>
+      <text x="157" y="25" text-anchor="middle" font-size="10" fill="#fb7185" font-weight="600">list comprehension  — eager (all at once)</text>
+      <text x="20" y="45" fill="#6b728e">chunks = [doc[i:i+512]</text>
+      <text x="20" y="60" fill="#6b728e">          for doc in docs]    # RAM spike!</text>
+      <text x="20" y="74" fill="#fb7185">all chunks in memory before first use</text>
+
+      <text x="330" y="50" text-anchor="middle" font-size="16" fill="#3d4157">→</text>
+
+      <rect x="345" y="10" width="285" height="70" rx="7" fill="#1a1d24" stroke="#2e323d"/>
+      <rect x="345" y="10" width="285" height="22" rx="7" fill="rgba(94,234,212,.08)" stroke="#2e323d"/>
+      <text x="487" y="25" text-anchor="middle" font-size="10" fill="#5eead4" font-weight="600">generator — lazy (one at a time)</text>
+      <text x="355" y="45" fill="#dde1ec"><tspan fill="#a78bfa">def</tspan> chunks(docs):</text>
+      <text x="355" y="60" fill="#dde1ec">  <tspan fill="#a78bfa">for</tspan> doc <tspan fill="#a78bfa">in</tspan> docs: <tspan fill="#a78bfa">yield</tspan> doc  <tspan fill="#3d4460"># O(1) mem</tspan></text>
+      <text x="355" y="74" fill="#5eead4">each chunk produced only when needed</text>
+    </svg>
+  </div>
+
+  <div class="cb"><pre><span class="cm"># ── sync generator: chunk docs for RAG embedding ─────────────</span>
+<span class="kw">def</span> <span class="fn">chunk_docs</span>(docs: list[str], size: int = <span class="nm">512</span>):
+    <span class="kw">for</span> doc <span class="kw">in</span> docs:
+        <span class="kw">for</span> i <span class="kw">in</span> range(<span class="nm">0</span>, len(doc), size):
+            <span class="kw">yield</span> doc[i:i + size]    <span class="cm"># no full list in memory</span>
+
+<span class="cm"># ── async generator: stream tokens from Anthropic API ────────</span>
+<span class="kw">async def</span> <span class="fn">stream_llm</span>(prompt: str):
+    <span class="kw">async with</span> client.messages.stream(
+        model=<span class="st">"claude-sonnet-4-20250514"</span>,
+        messages=[{<span class="st">"role"</span>:<span class="st">"user"</span>, <span class="st">"content"</span>:prompt}],
+        max_tokens=<span class="nm">1024</span>
+    ) <span class="kw">as</span> stream:
+        <span class="kw">async for</span> text <span class="kw">in</span> stream.text_stream:
+            <span class="kw">yield</span> text               <span class="cm"># push each token to caller immediately</span>
+
+<span class="cm"># ── consuming the async generator in FastAPI (SSE) ───────────</span>
+<span class="kw">async for</span> token <span class="kw">in</span> stream_llm(<span class="st">"Summarise this doc"</span>):
+    print(token, end=<span class="st">""</span>, flush=<span class="nm">True</span>)</pre></div>
+
+  <div class="ac">
+    <div class="ac-label">How this connects to AI Agents</div>
+    <p><strong>Streaming is the default UX for LLM apps</strong> — users see tokens appear in real time. The Anthropic SDK exposes streaming directly as an async generator. For RAG pipelines, generators let you chunk, embed, and index millions of documents without memory overflow. <code>itertools.batched</code> / <code>islice</code> efficiently batch documents for embedding API calls. Generators also power <strong>tool-result streaming</strong> in multi-step agents, forwarding partial results before the full chain is complete.</p>
+  </div>
+</div>
+<hr class="div">
+
+
+<!-- ════════════════════════════════════════ -->
+<!-- 08  CONTEXT MANAGERS -->
+<!-- ════════════════════════════════════════ -->
+<div class="sec" id="s8">
+  <div class="sec-head">
+    <div class="sec-num">08</div>
+    <div>
+      <div class="sec-title">Context Managers</div>
+      <div class="sec-sub">with · __enter__ / __exit__ · @contextmanager · asynccontextmanager · resource cleanup</div>
+    </div>
+  </div>
+
+  <div class="pills">
+    <span class="pill pm">with</span><span class="pill pa">__enter__ / __exit__</span>
+    <span class="pill pv">@contextmanager</span><span class="pill pr">async with</span>
+    <span class="pill ps">contextlib.suppress</span>
+  </div>
+
+  <div class="cards">
+    <div class="card"><div class="card-t m">Definition</div><p>A context manager wraps a block with guaranteed setup + teardown. <code>__enter__</code> runs on entry; <code>__exit__</code> runs on exit — even if an exception was raised inside the block.</p></div>
+    <div class="card"><div class="card-t a">Why use it</div><p>Agents open resources constantly: HTTP sessions, DB connections, file handles, code sandboxes. Context managers guarantee these close cleanly — no leaked connections, no orphaned processes.</p></div>
+  </div>
+
+  <!-- Flow -->
+  <div class="flow">
+    <div class="fbox m">with block enters</div>
+    <div class="farr">→</div>
+    <div class="fbox">__enter__ called</div>
+    <div class="farr">→</div>
+    <div class="fbox">body runs</div>
+    <div class="farr">→</div>
+    <div class="fbox r">exception?</div>
+    <div class="farr">→</div>
+    <div class="fbox a">__exit__ called</div>
+    <div class="farr">→</div>
+    <div class="fbox m">cleanup done ✓</div>
+  </div>
+
+  <div class="cb"><pre><span class="kw">from</span> contextlib <span class="kw">import</span> asynccontextmanager
+<span class="kw">import</span> time, logging
+
+<span class="cm"># ── custom: time every LLM span and log it ───────────────────</span>
+<span class="dc">@asynccontextmanager</span>
+<span class="kw">async def</span> <span class="fn">timed_span</span>(name: str):
+    t0 = time.perf_counter()
+    logging.info(<span class="st">f"[{name}] start"</span>)
+    <span class="kw">try</span>:
+        <span class="kw">yield</span>                             <span class="cm"># body executes here</span>
+    <span class="kw">finally</span>:                              <span class="cm"># always runs — even on error</span>
+        ms = (time.perf_counter() - t0) * <span class="nm">1000</span>
+        logging.info(<span class="st">f"[{name}] {ms:.0f}ms"</span>)
+
+<span class="cm"># usage</span>
+<span class="kw">async with</span> timed_span(<span class="st">"search_tool"</span>):
+    result = <span class="kw">await</span> search(query)          <span class="cm"># latency always logged</span>
+
+<span class="cm"># ── aiohttp session: connection pool auto-closed ─────────────</span>
+<span class="kw">async with</span> httpx.AsyncClient() <span class="kw">as</span> client:
+    resp = <span class="kw">await</span> client.get(url)          <span class="cm"># socket closed even on error</span></pre></div>
+
+  <div class="ac">
+    <div class="ac-label">How this connects to AI Agents</div>
+    <p>The Anthropic SDK's <code>client.messages.stream()</code> is an <strong>async context manager</strong>. Database connection pools, vector DB sessions, and code sandbox environments all use them. You'll build custom ones for <strong>tracing every LLM span</strong> (start time, end time, tokens), <strong>managing DB transactions</strong>, and wrapping <strong>code execution sandboxes</strong> that must be torn down after each tool call. Without this, leaked connections silently degrade agent performance over time.</p>
+  </div>
+</div>
+<hr class="div">
+
+
+<!-- ════════════════════════════════════════ -->
+<!-- 09  MODULES & PACKAGING -->
+<!-- ════════════════════════════════════════ -->
+<div class="sec" id="s9">
+  <div class="sec-head">
+    <div class="sec-num">09</div>
+    <div>
+      <div class="sec-title">Modules &amp; Packaging</div>
+      <div class="sec-sub">import system · __init__.py · pyproject.toml · virtual environments · relative imports · __all__</div>
+    </div>
+  </div>
+
+  <div class="pills">
+    <span class="pill pm">import</span><span class="pill pm">from x import y</span>
+    <span class="pill pa">pyproject.toml</span><span class="pill pv">__init__.py</span>
+    <span class="pill pr">venv / pip</span><span class="pill ps">__all__</span>
+  </div>
+
+  <div class="cards">
+    <div class="card"><div class="card-t m">Definition</div><p>A <em>module</em> is any <code>.py</code> file. A <em>package</em> is a directory with <code>__init__.py</code>. Python resolves import names to files, executes them once, and caches them in <code>sys.modules</code>.</p></div>
+    <div class="card"><div class="card-t a">Why structure it</div><p>A real agent is a <em>software system</em>, not a script. Proper packaging separates concerns (tools / memory / orchestration), makes code testable, and ensures identical environments between laptop and production container.</p></div>
+  </div>
+
+  <!-- project tree diagram -->
+  <div class="cb" style="border-left-color:var(--violet)"><pre><span class="cm">my_agent/                       ← project root</span>
+├── pyproject.toml               <span class="cm">← dependencies, build config</span>
+├── .env                         <span class="cm">← secrets (NEVER commit to git)</span>
+├── my_agent/                    <span class="cm">← package (the importable code)</span>
+│   ├── __init__.py              <span class="cm">← exposes public API via __all__</span>
+│   ├── agent.py                 <span class="cm">← BaseAgent / ResearchAgent</span>
+│   ├── config.py                <span class="cm">← AgentConfig dataclass</span>
+│   ├── tools/
+│   │   ├── __init__.py
+│   │   ├── search.py
+│   │   └── code_exec.py
+│   └── memory/
+│       ├── __init__.py
+│       └── vector_store.py
+└── tests/
+    └── test_agent.py</pre></div>
+
+  <div class="cb"><pre><span class="cm"># my_agent/__init__.py — controls public surface of the package</span>
+<span class="kw">from</span> .agent  <span class="kw">import</span> BaseAgent, ResearchAgent
+<span class="kw">from</span> .config <span class="kw">import</span> AgentConfig
+
+__all__ = [<span class="st">"BaseAgent"</span>, <span class="st">"ResearchAgent"</span>, <span class="st">"AgentConfig"</span>]
+
+<span class="cm"># config.py — load secrets safely from environment</span>
+<span class="kw">import</span> os
+<span class="kw">from</span> dotenv <span class="kw">import</span> load_dotenv
+load_dotenv()
+
+ANTHROPIC_KEY = os.environ[<span class="st">"ANTHROPIC_API_KEY"</span>]  <span class="cm"># raises KeyError if missing</span>
+
+<span class="cm"># pyproject.toml snippet</span>
+<span class="cm"># [project]</span>
+<span class="cm"># name = "my-agent"</span>
+<span class="cm"># dependencies = ["anthropic>=0.25", "httpx", "pydantic>=2"]</span></pre></div>
+
+  <div class="note note-w">
+    <strong>Always isolate with a virtual environment:</strong> <code>python -m venv .venv</code> → <code>source .venv/bin/activate</code>. Never install globally — dependency version conflicts between projects silently break agents.
+  </div>
+
+  <div class="ac">
+    <div class="ac-label">How this connects to AI Agents</div>
+    <p>A production agent is packaged properly so it can be installed in Docker with <code>pip install -e .</code>, tested with <code>pytest</code>, and deployed with all its dependencies locked. <strong>Circular imports</strong> are a common bug in agent code (tools importing agents that import tools) — understanding Python's import resolution helps you structure the code to avoid them. <strong><code>__all__</code></strong> defines the clean API surface teammates and framework integrations rely on. <code>pyproject.toml</code> pins exact dependency versions so the production container runs identically to your laptop.</p>
+  </div>
+</div>
+
+
+<!-- ── FOOTER ── -->
+<hr class="div">
+<div style="text-align:center;padding:16px 0 0;">
+  <div style="font-family:var(--ff-code);font-size:9.5px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;">Python Proficiency · AI Agent Developer Series</div>
+  <div style="font-size:12px;color:var(--subtle);margin-top:6px;font-style:italic;">Next module → LLM Core Knowledge: Prompt Engineering &amp; API Fluency</div>
+</div>
+
+</div><!-- /wrap -->
+<script>
+// progress bar
+const pb = document.getElementById('pgbar');
+window.addEventListener('scroll', () => {
+  const h = document.documentElement;
+  pb.style.width = (h.scrollTop / (h.scrollHeight - h.clientHeight) * 100) + '%';
+});
+// reveal sections on scroll
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.07 });
+document.querySelectorAll('.sec').forEach(s => obs.observe(s));
+</script>
+</body>
+</html>
