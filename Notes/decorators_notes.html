@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Python Decorators — Field Notes</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,600;0,900;1,300&family=DM+Mono:wght@300;400;500&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink: #0f0f0f;
+    --ink-soft: #3a3a3a;
+    --ink-muted: #777;
+    --accent: #c0392b;
+    --accent-soft: #f9eae8;
+    --accent2: #1a5276;
+    --accent2-soft: #e8f0f9;
+    --gold: #b7860b;
+    --gold-soft: #fdf6e3;
+    --green: #1e6641;
+    --green-soft: #e8f5ee;
+    --border: #e0dcd6;
+    --bg: #ffffff;
+    --bg-warm: #faf9f7;
+    --mono: 'DM Mono', monospace;
+    --serif: 'Fraunces', serif;
+    --sans: 'Instrument Sans', sans-serif;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.7;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 60px 40px 120px;
+  }
+
+  /* ── HEADER ─────────────────────────────── */
+  header {
+    border-bottom: 3px solid var(--ink);
+    padding-bottom: 32px;
+    margin-bottom: 60px;
+    position: relative;
+  }
+  .header-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+  header h1 {
+    font-family: var(--serif);
+    font-size: clamp(2.4rem, 5vw, 3.8rem);
+    font-weight: 900;
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+  }
+  header h1 em {
+    font-style: italic;
+    font-weight: 300;
+    color: var(--accent);
+  }
+  .header-sub {
+    margin-top: 16px;
+    color: var(--ink-soft);
+    font-size: 14px;
+    max-width: 560px;
+  }
+  .toc-pill {
+    display: inline-block;
+    margin-top: 24px;
+    background: var(--ink);
+    color: white;
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 6px 14px;
+    border-radius: 2px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-decoration: none;
+  }
+
+  /* ── SECTIONS ────────────────────────────── */
+  section { margin-bottom: 72px; }
+
+  .section-number {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  h2 {
+    font-family: var(--serif);
+    font-size: 1.9rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin-bottom: 20px;
+    border-left: 4px solid var(--accent);
+    padding-left: 14px;
+  }
+
+  h3 {
+    font-family: var(--serif);
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 28px 0 10px;
+    color: var(--ink);
+  }
+
+  p { color: var(--ink-soft); margin-bottom: 14px; }
+
+  /* ── CALLOUT BOXES ───────────────────────── */
+  .callout {
+    border-radius: 2px;
+    padding: 18px 22px;
+    margin: 22px 0;
+    border-left: 4px solid;
+  }
+  .callout.red   { background: var(--accent-soft);  border-color: var(--accent);  }
+  .callout.blue  { background: var(--accent2-soft); border-color: var(--accent2); }
+  .callout.gold  { background: var(--gold-soft);    border-color: var(--gold);    }
+  .callout.green { background: var(--green-soft);   border-color: var(--green);   }
+  .callout-title {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+  .callout.red   .callout-title { color: var(--accent);  }
+  .callout.blue  .callout-title { color: var(--accent2); }
+  .callout.gold  .callout-title { color: var(--gold);    }
+  .callout.green .callout-title { color: var(--green);   }
+  .callout p { margin: 0; font-size: 14px; }
+
+  /* ── SYNTAX BLOCK ────────────────────────── */
+  .syntax-box {
+    background: var(--bg-warm);
+    border: 1.5px solid var(--border);
+    border-top: 3px solid var(--ink);
+    border-radius: 2px;
+    padding: 24px 28px;
+    margin: 20px 0;
+  }
+  .syntax-box .syntax-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin-bottom: 12px;
+  }
+
+  /* ── CODE ────────────────────────────────── */
+  pre {
+    background: #0f0f0f;
+    color: #e8e6e1;
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.65;
+    padding: 22px 26px;
+    border-radius: 2px;
+    overflow-x: auto;
+    margin: 18px 0;
+    position: relative;
+  }
+  pre .lang-badge {
+    position: absolute;
+    top: 10px; right: 14px;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #666;
+  }
+  code { font-family: var(--mono); font-size: 0.88em; }
+  p code, li code {
+    background: #f0ede8;
+    padding: 1px 6px;
+    border-radius: 2px;
+    color: var(--accent);
+  }
+
+  /* syntax colors */
+  .kw  { color: #e06c75; }   /* keywords */
+  .fn  { color: #61afef; }   /* function names */
+  .dec { color: #c678dd; }   /* decorators */
+  .st  { color: #98c379; }   /* strings */
+  .cm  { color: #5c6370; font-style: italic; }  /* comments */
+  .nb  { color: #e5c07b; }   /* builtins / numbers */
+  .op  { color: #56b6c2; }   /* operators */
+
+  /* ── CASES LIST ──────────────────────────── */
+  .cases-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin: 20px 0;
+  }
+  @media(max-width:640px){ .cases-grid { grid-template-columns: 1fr; } }
+  .case-card {
+    border: 1.5px solid var(--border);
+    border-radius: 2px;
+    padding: 16px 18px;
+    background: var(--bg-warm);
+  }
+  .case-card .case-num {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    margin-bottom: 6px;
+  }
+  .case-card strong { font-size: 14px; display: block; margin-bottom: 4px; }
+  .case-card span { font-size: 13px; color: var(--ink-soft); }
+
+  /* ── BIG TABLE ───────────────────────────── */
+  .table-wrap { overflow-x: auto; margin: 24px 0; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  thead {
+    background: var(--ink);
+    color: white;
+  }
+  thead th {
+    padding: 12px 14px;
+    text-align: left;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+  tbody tr { border-bottom: 1px solid var(--border); }
+  tbody tr:nth-child(even) { background: var(--bg-warm); }
+  tbody tr:hover { background: #f0ede8; }
+  td {
+    padding: 12px 14px;
+    vertical-align: top;
+    line-height: 1.5;
+    color: var(--ink-soft);
+  }
+  td:first-child {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent);
+    white-space: nowrap;
+    font-weight: 500;
+  }
+  td strong { color: var(--ink); font-weight: 600; }
+  td code {
+    background: #f0ede8;
+    padding: 1px 5px;
+    border-radius: 2px;
+    color: var(--accent2);
+    font-size: 11px;
+  }
+
+  /* ── CODE EXAMPLES SECTION ───────────────── */
+  .decorator-block {
+    margin-bottom: 52px;
+    border: 1.5px solid var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .decorator-header {
+    background: var(--ink);
+    color: white;
+    padding: 14px 22px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .decorator-header .dnum {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: #888;
+  }
+  .decorator-header .dname {
+    font-family: var(--mono);
+    font-size: 15px;
+    color: #c678dd;
+    font-weight: 500;
+  }
+  .decorator-header .dtag {
+    margin-left: auto;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: #555;
+    text-transform: uppercase;
+  }
+  .decorator-body { padding: 20px 22px; background: var(--bg); }
+  .decorator-body p { font-size: 13.5px; margin-bottom: 10px; }
+  .decorator-body pre { margin: 0; border-radius: 0; }
+
+  /* ── DIVIDER ─────────────────────────────── */
+  .rule {
+    border: none;
+    border-top: 1.5px solid var(--border);
+    margin: 56px 0;
+  }
+
+  /* ── FOOTER ──────────────────────────────── */
+  footer {
+    border-top: 3px solid var(--ink);
+    padding-top: 24px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-muted);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════ HEADER ══════════ -->
+<header>
+  <div class="header-label">Python Engineering · Reference Notes</div>
+  <h1>Python<br/><em>Decorators</em></h1>
+  <p class="header-sub">A complete field reference for RAG, LLM &amp; ML production systems — definitions, syntax, use-cases, and real project code.</p>
+</header>
+
+
+<!-- ══════════ 01 · DEFINITION ══════════ -->
+<section id="definition">
+  <div class="section-number">01 · Foundation</div>
+  <h2>What is a Decorator?</h2>
+
+  <p>A <strong>decorator</strong> is a higher-order function that wraps another function or class, transparently adding behaviour <em>before</em>, <em>after</em>, or <em>around</em> it — without modifying its source code. In Python, decorators leverage the fact that functions are first-class objects.</p>
+
+  <div class="callout blue">
+    <div class="callout-title">Core Idea</div>
+    <p>A decorator takes a callable, wraps it inside another callable, and returns the wrapper. The original callable's name still points to the new, enhanced version.</p>
+  </div>
+
+  <p>Conceptually: <code>decorated_fn = decorator(original_fn)</code>. The <code>@</code> syntax is pure syntactic sugar for that assignment.</p>
+
+  <div class="syntax-box">
+    <div class="syntax-label">General Decorator Anatomy</div>
+<pre><span class="kw">def</span> <span class="fn">my_decorator</span>(func):
+    <span class="kw">from</span> functools <span class="kw">import</span> wraps
+    <span class="dec">@wraps</span>(func)                     <span class="cm"># preserve original metadata</span>
+    <span class="kw">def</span> <span class="fn">wrapper</span>(*args, **kwargs):
+        <span class="cm"># --- code BEFORE the function ---</span>
+        result = func(*args, **kwargs)  <span class="cm"># call the original</span>
+        <span class="cm"># --- code AFTER the function ----</span>
+        <span class="kw">return</span> result
+    <span class="kw">return</span> wrapper
+
+<span class="dec">@my_decorator</span>
+<span class="kw">def</span> <span class="fn">greet</span>(name: <span class="nb">str</span>) -> <span class="nb">str</span>:
+    <span class="kw">return</span> <span class="st">f"Hello, {name}"</span>
+<span class="lang-badge">python</span></pre>
+  </div>
+
+  <h3>Decorator with Arguments (Factory Pattern)</h3>
+<pre><span class="kw">def</span> <span class="fn">repeat</span>(times: <span class="nb">int</span>):          <span class="cm"># outer factory</span>
+    <span class="kw">def</span> <span class="fn">decorator</span>(func):           <span class="cm"># middle: real decorator</span>
+        <span class="dec">@wraps</span>(func)
+        <span class="kw">def</span> <span class="fn">wrapper</span>(*args, **kwargs):
+            <span class="kw">for</span> _ <span class="kw">in</span> <span class="nb">range</span>(times):
+                result = func(*args, **kwargs)
+            <span class="kw">return</span> result
+        <span class="kw">return</span> wrapper
+    <span class="kw">return</span> decorator
+
+<span class="dec">@repeat</span>(times=<span class="nb">3</span>)
+<span class="kw">def</span> <span class="fn">ping</span>(): <span class="nb">print</span>(<span class="st">"ping"</span>)
+<span class="lang-badge">python</span></pre>
+</section>
+
+
+<!-- ══════════ 02 · WHEN TO USE ══════════ -->
+<section id="when">
+  <div class="section-number">02 · Applicability</div>
+  <h2>When Must You Use a Decorator?</h2>
+
+  <p>Use a decorator whenever you need to apply the same cross-cutting behaviour to multiple functions/classes <em>without</em> copy-pasting code. Classic production triggers:</p>
+
+  <div class="cases-grid">
+    <div class="case-card">
+      <div class="case-num">CASE 01</div>
+      <strong>Cross-cutting concerns</strong>
+      <span>Logging, metrics, tracing — same wrapper on every endpoint or service method.</span>
+    </div>
+    <div class="case-card">
+      <div class="case-num">CASE 02</div>
+      <strong>Retry &amp; resilience</strong>
+      <span>Automatic retry with back-off on flaky LLM API calls or DB connections.</span>
+    </div>
+    <div class="case-card">
+      <div class="case-num">CASE 03</div>
+      <strong>Caching / memoisation</strong>
+      <span>Expensive embedding or tokenisation calls that return the same result for the same input.</span>
+    </div>
+    <div class="case-card">
+      <div class="case-num">CASE 04</div>
+      <strong>Access control / auth</strong>
+      <span>Protect API routes; enforce role-based guards before handler logic runs.</span>
+    </div>
+    <div class="case-card">
+      <div class="case-num">CASE 05</div>
+      <strong>Interface contracts</strong>
+      <span>Force subclasses to implement methods (<code>@abstractmethod</code>).</span>
+    </div>
+    <div class="case-card">
+      <div class="case-num">CASE 06</div>
+      <strong>Gradient management</strong>
+      <span>Disable gradient tracking during inference to save GPU memory.</span>
+    </div>
+    <div class="case-card">
+      <div class="case-num">CASE 07</div>
+      <strong>Data validation</strong>
+      <span>Pydantic field/model validators run automatically on model instantiation.</span>
+    </div>
+    <div class="case-card">
+      <div class="case-num">CASE 08</div>
+      <strong>Resource management</strong>
+      <span>Context managers as decorators for setup/teardown (DB sessions, file handles).</span>
+    </div>
+  </div>
+
+  <div class="callout gold">
+    <div class="callout-title">Rule of Thumb</div>
+    <p>If you find yourself writing the same boilerplate in three or more functions, extract it into a decorator. One definition, infinite applications.</p>
+  </div>
+</section>
+
+
+<!-- ══════════ 03 · SYNTAX ══════════ -->
+<section id="syntax">
+  <div class="section-number">03 · Syntax Reference</div>
+  <h2>Decorator Syntax Patterns</h2>
+
+  <div class="syntax-box">
+    <div class="syntax-label">Pattern 1 — Simple decorator</div>
+<pre><span class="dec">@decorator</span>
+<span class="kw">def</span> <span class="fn">function</span>(): ...</pre>
+  </div>
+
+  <div class="syntax-box">
+    <div class="syntax-label">Pattern 2 — Decorator with arguments</div>
+<pre><span class="dec">@decorator</span>(arg1, arg2)
+<span class="kw">def</span> <span class="fn">function</span>(): ...</pre>
+  </div>
+
+  <div class="syntax-box">
+    <div class="syntax-label">Pattern 3 — Stacked decorators (applied bottom-up)</div>
+<pre><span class="dec">@decorator_a</span>
+<span class="dec">@decorator_b</span>
+<span class="dec">@decorator_c</span>
+<span class="kw">def</span> <span class="fn">function</span>(): ...
+<span class="cm"># equivalent to: decorator_a(decorator_b(decorator_c(function)))</span></pre>
+  </div>
+
+  <div class="syntax-box">
+    <div class="syntax-label">Pattern 4 — Class decorator</div>
+<pre><span class="dec">@dataclass</span>
+<span class="kw">class</span> <span class="fn">Config</span>:
+    lr: <span class="nb">float</span> = <span class="nb">1e-4</span>
+    epochs: <span class="nb">int</span> = <span class="nb">10</span></pre>
+  </div>
+
+  <div class="syntax-box">
+    <div class="syntax-label">Pattern 5 — Async decorator</div>
+<pre><span class="kw">import</span> asyncio
+<span class="kw">from</span> functools <span class="kw">import</span> wraps
+
+<span class="kw">def</span> <span class="fn">async_log</span>(func):
+    <span class="dec">@wraps</span>(func)
+    <span class="kw">async def</span> <span class="fn">wrapper</span>(*args, **kwargs):
+        <span class="nb">print</span>(<span class="st">f"Calling {func.__name__}"</span>)
+        <span class="kw">return</span> <span class="kw">await</span> func(*args, **kwargs)
+    <span class="kw">return</span> wrapper
+
+<span class="dec">@async_log</span>
+<span class="kw">async def</span> <span class="fn">fetch_embeddings</span>(text): ...</pre>
+  </div>
+</section>
+
+
+<!-- ══════════ 04 · BIG TABLE ══════════ -->
+<section id="table">
+  <div class="section-number">04 · Quick Reference</div>
+  <h2>Top 10 Decorators — Master Table</h2>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Decorator</th>
+          <th>Definition</th>
+          <th>What it does</th>
+          <th>When to use</th>
+          <th>General Syntax</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>01</td>
+          <td><code>@property</code></td>
+          <td><strong>Built-in descriptor</strong> that converts a method into a read-only (or read-write) attribute.</td>
+          <td>Lets you call a method like an attribute. Enables getter/setter/deleter on class attributes.</td>
+          <td>Computed attributes, lazy loading, encapsulating internal state with validation.</td>
+          <td><code>@property<br/>def name(self): return self._name</code></td>
+        </tr>
+        <tr>
+          <td>02</td>
+          <td><code>@staticmethod</code></td>
+          <td>Marks a method that does <strong>not</strong> receive an implicit first argument (<code>self</code> or <code>cls</code>).</td>
+          <td>Binds a plain function into a class namespace. No access to instance or class.</td>
+          <td>Utility / helper functions logically belonging to a class but needing no class state.</td>
+          <td><code>@staticmethod<br/>def helper(x): return x</code></td>
+        </tr>
+        <tr>
+          <td>03</td>
+          <td><code>@abstractmethod</code></td>
+          <td>Part of <code>abc</code> module. Declares a method that <strong>must be overridden</strong> in every concrete subclass.</td>
+          <td>Prevents instantiation of any class that doesn't implement all abstract methods.</td>
+          <td>Defining interfaces or base classes in plugin systems, model backends, retrieval strategies.</td>
+          <td><code>@abstractmethod<br/>def embed(self, text): ...</code></td>
+        </tr>
+        <tr>
+          <td>04</td>
+          <td><code>@dataclass</code></td>
+          <td>Auto-generates <code>__init__</code>, <code>__repr__</code>, <code>__eq__</code> (and optionally ordering / frozen) from class field annotations.</td>
+          <td>Eliminates boilerplate for data-holding classes. Supports <code>field()</code> for defaults and metadata.</td>
+          <td>Config objects, hyperparameter containers, structured data transfer objects (DTOs).</td>
+          <td><code>@dataclass<br/>class Config:<br/>  lr: float = 1e-3</code></td>
+        </tr>
+        <tr>
+          <td>05</td>
+          <td><code>@torch.no_grad()</code></td>
+          <td>PyTorch context-manager decorator that <strong>disables gradient computation</strong> for all operations inside the wrapped function.</td>
+          <td>Reduces memory usage and speeds up inference by skipping autograd graph construction.</td>
+          <td>Model evaluation loops, inference endpoints, embedding generation, any forward pass outside training.</td>
+          <td><code>@torch.no_grad()<br/>def predict(model, x): ...</code></td>
+        </tr>
+        <tr>
+          <td>06</td>
+          <td><code>@lru_cache</code></td>
+          <td>Built-in memoisation decorator (<code>functools</code>) implementing a <strong>Least Recently Used</strong> cache of fixed size.</td>
+          <td>Caches return values keyed by arguments; evicts oldest entry when <code>maxsize</code> is reached.</td>
+          <td>Repeated tokenisation, embedding look-ups, config loading, expensive pure-function calls.</td>
+          <td><code>@lru_cache(maxsize=512)<br/>def tokenise(text): ...</code></td>
+        </tr>
+        <tr>
+          <td>07</td>
+          <td><code>@validator / @field_validator</code></td>
+          <td>Pydantic decorators that attach <strong>validation logic</strong> to specific model fields. <code>@field_validator</code> is the Pydantic v2 API.</td>
+          <td>Runs custom checks (type coercion, range, format) when a model is instantiated or updated.</td>
+          <td>Validating LLM API payloads, RAG query schemas, user inputs before they reach business logic.</td>
+          <td><code>@field_validator('temperature')<br/>@classmethod<br/>def check_temp(cls, v): ...</code></td>
+        </tr>
+        <tr>
+          <td>08</td>
+          <td><code>@retry</code></td>
+          <td>Third-party decorator (e.g. <code>tenacity</code>) that <strong>automatically re-executes</strong> a function on exception, with configurable back-off.</td>
+          <td>Wraps the function in a retry loop; handles transient errors (rate-limits, timeouts) transparently.</td>
+          <td>LLM API calls, vector DB writes, any network I/O that can fail intermittently.</td>
+          <td><code>@retry(wait=wait_exponential(), stop=stop_after_attempt(5))<br/>def call_llm(): ...</code></td>
+        </tr>
+        <tr>
+          <td>09</td>
+          <td><code>@contextmanager</code></td>
+          <td><code>contextlib</code> decorator that turns a <strong>generator function</strong> into a context manager (usable with <code>with</code>).</td>
+          <td>Everything before <code>yield</code> is <code>__enter__</code>; everything after is <code>__exit__</code>. Simplifies resource management.</td>
+          <td>DB session lifecycle, temporary file handling, profiling blocks, distributed-lock scopes.</td>
+          <td><code>@contextmanager<br/>def get_session():<br/>  s = Session(); yield s; s.close()</code></td>
+        </tr>
+        <tr>
+          <td>10</td>
+          <td><code>@router.post / @router.get</code></td>
+          <td>FastAPI / Flask route decorators that <strong>register a handler</strong> for an HTTP method + path combination.</td>
+          <td>Maps a URL path and HTTP verb to a Python async function; handles request parsing and response serialisation.</td>
+          <td>Exposing RAG pipelines, LLM inference, or ML model predictions as REST API endpoints.</td>
+          <td><code>@router.post("/query")<br/>async def query(req: QueryRequest): ...</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+
+<!-- ══════════ 05 · CODE EXAMPLES ══════════ -->
+<section id="code">
+  <div class="section-number">05 · Project Code</div>
+  <h2>Real Project Code Examples</h2>
+  <p>Short, meaningful snippets showing each decorator in its actual RAG / LLM / ML project context.</p>
+
+  <!-- 1. @property -->
+  <div class="decorator-block">
+    <div class="decorator-header">
+      <span class="dnum">01</span>
+      <span class="dname">@property</span>
+      <span class="dtag">RAG · LLM · ML</span>
+    </div>
+    <div class="decorator-body">
+      <p>Lazy-loads the embedding model only on first access, caching it as a private attribute. Common in RAG retrievers.</p>
+<pre><span class="kw">class</span> <span class="fn">EmbeddingRetriever</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, model_name: <span class="nb">str</span>):
+        self.model_name = model_name
+        self._model = <span class="nb">None</span>          <span class="cm"># not loaded yet</span>
+
+    <span class="dec">@property</span>
+    <span class="kw">def</span> <span class="fn">model</span>(self):
+        <span class="cm"># loaded once, reused forever</span>
+        <span class="kw">if</span> self._model <span class="kw">is</span> <span class="nb">None</span>:
+            self._model = SentenceTransformer(self.model_name)
+        <span class="kw">return</span> self._model
+
+    <span class="kw">def</span> <span class="fn">embed</span>(self, text: <span class="nb">str</span>):
+        <span class="kw">return</span> self.model.encode(text)  <span class="cm"># triggers load on first call</span>
+<span class="lang-badge">python</span></pre>
+    </div>
+  </div>
+
+  <!-- 2. @staticmethod -->
+  <div class="decorator-block">
+    <div class="decorator-header">
+      <span class="dnum">02</span>
+      <span class="dname">@staticmethod</span>
+      <span class="dtag">RAG · LLM · ML</span>
+    </div>
+    <div class="decorator-body">
+      <p>Pure utility method on a chunking class — no instance state needed, but logically belongs with the chunker.</p>
+<pre><span class="kw">class</span> <span class="fn">DocumentChunker</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, chunk_size=<span class="nb">512</span>, overlap=<span class="nb">64</span>):
+        self.chunk_size = chunk_size
+        self.overlap = overlap
+
+    <span class="dec">@staticmethod</span>
+    <span class="kw">def</span> <span class="fn">clean_text</span>(text: <span class="nb">str</span>) -> <span class="nb">str</span>:
+        <span class="cm"># strip whitespace, normalise unicode — no self needed</span>
+        <span class="kw">import</span> unicodedata
+        text = unicodedata.normalize(<span class="st">"NFKC"</span>, text)
+        <span class="kw">return</span> <span class="st">" "</span>.join(text.split())
+
+    <span class="kw">def</span> <span class="fn">chunk</span>(self, text: <span class="nb">str</span>) -> <span class="nb">list</span>[<span class="nb">str</span>]:
+        text = DocumentChunker.clean_text(text)  <span class="cm"># call without self</span>
+        <span class="kw">return</span> [text[i:i+self.chunk_size]
+                <span class="kw">for</span> i <span class="kw">in</span> <span class="nb">range</span>(<span class="nb">0</span>, <span class="nb">len</span>(text), self.chunk_size - self.overlap)]
+<span class="lang-badge">python</span></pre>
+    </div>
+  </div>
+
+  <!-- 3. @abstractmethod -->
+  <div class="decorator-block">
+    <div class="decorator-header">
+      <span class="dnum">03</span>
+      <span class="dname">@abstractmethod</span>
+      <span class="dtag">RAG · LLM · ML</span>
+    </div>
+    <div class="decorator-body">
+      <p>Defines a retriever interface — forces every backend (Dense, BM25, Hybrid) to implement <code>retrieve()</code>.</p>
+<pre><span class="kw">from</span> abc <span class="kw">import</span> ABC, abstractmethod
+
+<span class="kw">class</span> <span class="fn">BaseRetriever</span>(ABC):
+    <span class="dec">@abstractmethod</span>
+    <span class="kw">def</span> <span class="fn">retrieve</span>(self, query: <span class="nb">str</span>, top_k: <span class="nb">int</span>) -> <span class="nb">list</span>[<span class="nb">dict</span>]:
+        <span class="st">"""Return top_k relevant documents for query."""</span>
+
+    <span class="dec">@abstractmethod</span>
+    <span class="kw">def</span> <span class="fn">index</span>(self, documents: <span class="nb">list</span>[<span class="nb">str</span>]) -> <span class="nb">None</span>:
+        <span class="st">"""Index a list of documents."""</span>
+
+<span class="kw">class</span> <span class="fn">DenseRetriever</span>(BaseRetriever):
+    <span class="kw">def</span> <span class="fn">retrieve</span>(self, query, top_k):
+        <span class="kw">return</span> self.vector_store.similarity_search(query, k=top_k)
+
+    <span class="kw">def</span> <span class="fn">index</span>(self, documents):
+        self.vector_store.add_documents(documents)
+
+<span class="cm"># BaseRetriever()  ← would raise TypeError at runtime</span>
+<span class="lang-badge">python</span></pre>
+    </div>
+  </div>
+
+  <!-- 4. @dataclass -->
+  <div class="decorator-block">
+    <div class="decorator-header">
+      <span class="dnum">04</span>
+      <span class="dname">@dataclass</span>
+      <span class="dtag">RAG · LLM · ML</span>
+    </div>
+    <div class="decorator-body">
+      <p>Clean hyperparameter config for a training run — zero boilerplate <code>__init__</code>, auto <code>__repr__</code>, easy serialisation.</p>
+<pre><span class="kw">from</span> dataclasses <span class="kw">import</span> dataclass, field
+
+<span class="dec">@dataclass</span>
+<span class="kw">class</span> <span class="fn">TrainingConfig</span>:
+    model_name:   <span class="nb">str</span>   = <span class="st">"bert-base-uncased"</span>
+    learning_rate:<span class="nb">float</span> = <span class="nb">2e-5</span>
+    batch_size:   <span class="nb">int</span>   = <span class="nb">32</span>
+    epochs:       <span class="nb">int</span>   = <span class="nb">3</span>
+    warmup_steps: <span class="nb">int</span>   = <span class="nb">500</span>
+    output_dir:   <span class="nb">str</span>   = <span class="st">"./checkpoints"</span>
+    tags:         <span class="nb">list</span>  = field(default_factory=<span class="nb">list</span>)
+
+cfg = TrainingConfig(learning_rate=<span class="nb">3e-5</span>, epochs=<span class="nb">5</span>)
+<span class="nb">print</span>(cfg)
+<span class="cm"># TrainingConfig(model_name='bert-base-uncased', learning_rate=3e-05, ...)</span>
+<span class="lang-badge">python</span></pre>
+    </div>
+  </div>
+
+  <!-- 5. @torch.no_grad() -->
+  <div class="decorator-block">
+    <div class="decorator-header">
+      <span class="dnum">05</span>
+      <span class="dname">@torch.no_grad()</span>
+      <span class="dtag">LLM · ML</span>
+    </div>
+    <div class="decorator-body">
+      <p>Wraps the inference function so PyTorch never builds a computation graph — critical for production serving latency and GPU memory.</p>
+<pre><span class="kw">import</span> torch
+
+<span class="dec">@torch.no_grad()</span>
+<span class="kw">def</span> <span class="fn">generate_embeddings</span>(model, texts: <span class="nb">list</span>[<span class="nb">str</span>], device=<span class="st">"cuda"</span>):
+    <span class="kw">from</span> transformers <span class="kw">import</span> AutoTokenizer
+    tokenizer = AutoTokenizer.from_pretrained(model.config._name_or_path)
+    inputs = tokenizer(texts, return_tensors=<span class="st">"pt"</span>,
+                       padding=<span class="nb">True</span>, truncation=<span class="nb">True</span>).to(device)
+    outputs = model(**inputs)                <span class="cm"># no grad graph built</span>
+    embeddings = outputs.last_hidden_state[:, <span class="nb">0</span>, :]  <span class="cm"># [CLS] token</span>
+    <span class="kw">return</span> embeddings.cpu().numpy()
+
+<span class="cm"># torch.cuda.memory_allocated() is ~40% lower vs without @no_grad</span>
+<span class="lang-badge">python</span></pre>
+    </div>
+  </div>
+
+  <!-- 6. @lru_cache -->
+  <div class="decorator-block">
+    <div class="decorator-header">
+      <span class="dnum">06</span>
+      <span class="dname">@lru_cache</span>
+      <span class="dtag">RAG · LLM · ML</span>
+    </div>
+    <div class="decorator-body">
+      <p>Caches tokenisation results — identical prompts hitting the cache avoid redundant tokeniser calls under concurrent load.</p>
+<pre><span class="kw">from</span> functools <span class="kw">import</span> lru_cache
+<span class="kw">from</span> transformers <span class="kw">import</span> AutoTokenizer
+
+tokenizer = AutoTokenizer.from_pretrained(<span class="st">"gpt-4"</span>)  <span class="cm"># loaded once</span>
+
+<span class="dec">@lru_cache</span>(maxsize=<span class="nb">1024</span>)
+<span class="kw">def</span> <span class="fn">count_tokens</span>(text: <span class="nb">str</span>) -> <span class="nb">int</span>:
+    <span class="cm"># cache keyed by text string; pure function — same input → same output</span>
+    <span class="kw">return</span> <span class="nb">len</span>(tokenizer.encode(text))
+
+<span class="cm"># First call: tokenises</span>
+count_tokens(<span class="st">"What is retrieval-augmented generation?"</span>)  <span class="cm"># → 6</span>
+<span class="cm"># Second call: cache hit, zero compute</span>
+count_tokens(<span class="st">"What is retrieval-augmented generation?"</span>)  <span class="cm"># → 6 instantly</span>
+<span class="lang-badge">python</span></pre>
+    </div>
+  </div>
+
+  <!-- 7. @field_validator -->
+  <div class="decorator-block">
+    <div class="decorator-header">
+      <span class="dnum">07</span>
+      <span class="dname">@field_validator</span>
+      <span class="dtag">RAG · LLM</span>
+    </div>
+    <div class="decorator-body">
+      <p>Validates incoming LLM generation parameters at the API boundary — rejects bad values before they reach the model.</p>
+<pre><span class="kw">from</span> pydantic <span class="kw">import</span> BaseModel, field_validator
+
+<span class="kw">class</span> <span class="fn">GenerationRequest</span>(BaseModel):
+    prompt:      <span class="nb">str</span>
+    temperature: <span class="nb">float</span> = <span class="nb">0.7</span>
+    max_tokens:  <span class="nb">int</span>   = <span class="nb">512</span>
+    top_k:       <span class="nb">int</span>   = <span class="nb">50</span>
+
+    <span class="dec">@field_validator</span>(<span class="st">"temperature"</span>)
+    <span class="dec">@classmethod</span>
+    <span class="kw">def</span> <span class="fn">check_temperature</span>(cls, v: <span class="nb">float</span>) -> <span class="nb">float</span>:
+        <span class="kw">if not</span> (<span class="nb">0.0</span> <= v <= <span class="nb">2.0</span>):
+            <span class="kw">raise</span> <span class="nb">ValueError</span>(<span class="st">f"temperature must be 0–2, got {v}"</span>)
+        <span class="kw">return</span> v
+
+    <span class="dec">@field_validator</span>(<span class="st">"max_tokens"</span>)
+    <span class="dec">@classmethod</span>
+    <span class="kw">def</span> <span class="fn">check_tokens</span>(cls, v: <span class="nb">int</span>) -> <span class="nb">int</span>:
+        <span class="kw">if</span> v > <span class="nb">4096</span>:
+            <span class="kw">raise</span> <span class="nb">ValueError</span>(<span class="st">"max_tokens cannot exceed 4096"</span>)
+        <span class="kw">return</span> v
+
+req = GenerationRequest(prompt=<span class="st">"Explain RAG"</span>, temperature=<span class="nb">2.5</span>)
+<span class="cm"># ValidationError: temperature must be 0–2, got 2.5</span>
+<span class="lang-badge">python</span></pre>
+    </div>
+  </div>
+
+  <!-- 8. @retry -->
+  <div class="decorator-block">
+    <div class="decorator-header">
+      <span class="dnum">08</span>
+      <span class="dname">@retry</span>
+      <span class="dtag">RAG · LLM</span>
+    </div>
+    <div class="decorator-body">
+      <p>Wraps an OpenAI API call with exponential back-off — transparently handles rate-limit and timeout errors in production.</p>
+<pre><span class="kw">from</span> tenacity <span class="kw">import</span> (
+    retry, stop_after_attempt,
+    wait_exponential, retry_if_exception_type
+)
+<span class="kw">import</span> openai
+
+<span class="dec">@retry</span>(
+    wait=wait_exponential(multiplier=<span class="nb">1</span>, min=<span class="nb">2</span>, max=<span class="nb">60</span>),
+    stop=stop_after_attempt(<span class="nb">5</span>),
+    retry=retry_if_exception_type((
+        openai.RateLimitError,
+        openai.APITimeoutError,
+    )),
+    reraise=<span class="nb">True</span>,
+)
+<span class="kw">async def</span> <span class="fn">call_llm</span>(messages: <span class="nb">list</span>[<span class="nb">dict</span>]) -> <span class="nb">str</span>:
+    response = <span class="kw">await</span> openai.chat.completions.create(
+        model=<span class="st">"gpt-4o"</span>,
+        messages=messages,
+    )
+    <span class="kw">return</span> response.choices[<span class="nb">0</span>].message.content
+<span class="cm"># On RateLimitError: waits 2s, 4s, 8s … up to 60s, max 5 tries</span>
+<span class="lang-badge">python</span></pre>
+    </div>
+  </div>
+
+  <!-- 9. @contextmanager -->
+  <div class="decorator-block">
+    <div class="decorator-header">
+      <span class="dnum">09</span>
+      <span class="dname">@contextmanager</span>
+      <span class="dtag">RAG · ML</span>
+    </div>
+    <div class="decorator-body">
+      <p>Manages a SQLAlchemy database session for the vector-store metadata layer — always commits or rolls back, never leaks connections.</p>
+<pre><span class="kw">from</span> contextlib <span class="kw">import</span> contextmanager
+<span class="kw">from</span> sqlalchemy.orm <span class="kw">import</span> sessionmaker
+
+Session = sessionmaker(bind=engine)
+
+<span class="dec">@contextmanager</span>
+<span class="kw">def</span> <span class="fn">get_db_session</span>():
+    session = Session()
+    <span class="kw">try</span>:
+        <span class="kw">yield</span> session          <span class="cm"># caller uses this session</span>
+        session.commit()
+    <span class="kw">except</span> <span class="nb">Exception</span>:
+        session.rollback()
+        <span class="kw">raise</span>
+    <span class="kw">finally</span>:
+        session.close()
+
+<span class="cm"># Usage in RAG metadata store:</span>
+<span class="kw">with</span> get_db_session() <span class="kw">as</span> db:
+    db.add(DocumentRecord(content=chunk, embedding_id=eid))
+<span class="cm"># session automatically committed & closed</span>
+<span class="lang-badge">python</span></pre>
+    </div>
+  </div>
+
+  <!-- 10. @router.post -->
+  <div class="decorator-block">
+    <div class="decorator-header">
+      <span class="dnum">10</span>
+      <span class="dname">@router.post / @router.get</span>
+      <span class="dtag">RAG · LLM</span>
+    </div>
+    <div class="decorator-body">
+      <p>Exposes the full RAG pipeline as a REST endpoint — FastAPI handles request parsing, validation, and async execution automatically.</p>
+<pre><span class="kw">from</span> fastapi <span class="kw">import</span> APIRouter, HTTPException
+<span class="kw">from</span> pydantic <span class="kw">import</span> BaseModel
+
+router = APIRouter(prefix=<span class="st">"/rag"</span>, tags=[<span class="st">"retrieval"</span>])
+
+<span class="kw">class</span> <span class="fn">QueryRequest</span>(BaseModel):
+    question: <span class="nb">str</span>
+    top_k: <span class="nb">int</span> = <span class="nb">5</span>
+
+<span class="kw">class</span> <span class="fn">QueryResponse</span>(BaseModel):
+    answer: <span class="nb">str</span>
+    sources: <span class="nb">list</span>[<span class="nb">str</span>]
+
+<span class="dec">@router.post</span>(<span class="st">"/query"</span>, response_model=QueryResponse)
+<span class="kw">async def</span> <span class="fn">query_pipeline</span>(req: QueryRequest):
+    docs = retriever.retrieve(req.question, top_k=req.top_k)
+    <span class="kw">if not</span> docs:
+        <span class="kw">raise</span> HTTPException(<span class="nb">404</span>, <span class="st">"No relevant documents found"</span>)
+    answer = <span class="kw">await</span> call_llm(build_prompt(req.question, docs))
+    <span class="kw">return</span> QueryResponse(answer=answer, sources=[d[<span class="st">"id"</span>] <span class="kw">for</span> d <span class="kw">in</span> docs])
+
+<span class="dec">@router.get</span>(<span class="st">"/health"</span>)
+<span class="kw">async def</span> <span class="fn">health</span>(): <span class="kw">return</span> {<span class="st">"status"</span>: <span class="st">"ok"</span>}
+<span class="lang-badge">python</span></pre>
+    </div>
+  </div>
+
+</section>
+
+<hr class="rule"/>
+
+<footer>
+  <span>Python Decorators — Field Notes</span>
+  <span>RAG · LLM · ML Production Reference</span>
+  <span>10 decorators · 10 examples</span>
+</footer>
+
+</body>
+</html>
