@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Python Generators — Field Notes</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=IBM+Plex+Mono:wght@300;400;500&family=Karla:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink:        #0c0c0c;
+    --ink-soft:   #383838;
+    --ink-muted:  #888;
+    --accent:     #1a6b3c;       /* deep forest green */
+    --accent-soft:#e6f4ec;
+    --accent2:    #7b3f00;       /* warm sienna */
+    --accent2-soft:#faf0e6;
+    --blue:       #1b4f8a;
+    --blue-soft:  #e8eef8;
+    --violet:     #5b2d8e;
+    --violet-soft:#f2ecfa;
+    --border:     #dedad3;
+    --bg:         #ffffff;
+    --bg-warm:    #faf8f5;
+    --mono:       'IBM Plex Mono', monospace;
+    --serif:      'Playfair Display', serif;
+    --sans:       'Karla', sans-serif;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.72;
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 64px 42px 128px;
+  }
+
+  /* ── HEADER ─────────────────────────────── */
+  header {
+    margin-bottom: 64px;
+    padding-bottom: 36px;
+    border-bottom: 3px double var(--ink);
+    position: relative;
+  }
+  .header-eyebrow {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-family: var(--serif);
+    font-size: clamp(2.6rem, 5.5vw, 4rem);
+    font-weight: 900;
+    line-height: 1.06;
+    letter-spacing: -0.02em;
+  }
+  header h1 em {
+    font-style: italic;
+    font-weight: 400;
+    color: var(--accent);
+  }
+  .header-desc {
+    margin-top: 18px;
+    color: var(--ink-soft);
+    font-size: 14px;
+    max-width: 580px;
+    line-height: 1.65;
+  }
+  .badge-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 26px;
+  }
+  .badge {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 5px 12px;
+    border-radius: 2px;
+  }
+  .badge-dark  { background: var(--ink); color: #fff; }
+  .badge-green { background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent); }
+  .badge-brown { background: var(--accent2-soft); color: var(--accent2); border: 1px solid var(--accent2); }
+
+  /* ── SECTION ─────────────────────────────── */
+  section { margin-bottom: 76px; }
+
+  .section-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-muted);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-tag::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  h2 {
+    font-family: var(--serif);
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin-bottom: 22px;
+    padding-left: 16px;
+    border-left: 4px solid var(--accent);
+  }
+
+  h3 {
+    font-family: var(--serif);
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin: 30px 0 10px;
+  }
+
+  p { color: var(--ink-soft); margin-bottom: 14px; }
+
+  /* ── CALLOUTS ────────────────────────────── */
+  .callout {
+    border-radius: 2px;
+    padding: 18px 24px;
+    margin: 22px 0;
+    border-left: 4px solid;
+  }
+  .callout.green  { background: var(--accent-soft);  border-color: var(--accent);  }
+  .callout.brown  { background: var(--accent2-soft); border-color: var(--accent2); }
+  .callout.blue   { background: var(--blue-soft);    border-color: var(--blue);    }
+  .callout.violet { background: var(--violet-soft);  border-color: var(--violet);  }
+  .callout-label {
+    font-family: var(--mono);
+    font-size: 9.5px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 7px;
+    font-weight: 500;
+  }
+  .callout.green  .callout-label { color: var(--accent);  }
+  .callout.brown  .callout-label { color: var(--accent2); }
+  .callout.blue   .callout-label { color: var(--blue);    }
+  .callout.violet .callout-label { color: var(--violet);  }
+  .callout p { margin: 0; font-size: 13.5px; }
+
+  /* ── SYNTAX BOX ──────────────────────────── */
+  .syntax-box {
+    background: var(--bg-warm);
+    border: 1.5px solid var(--border);
+    border-top: 3px solid var(--accent);
+    border-radius: 2px;
+    padding: 22px 28px;
+    margin: 20px 0;
+  }
+  .syntax-box .slabel {
+    font-family: var(--mono);
+    font-size: 9.5px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin-bottom: 14px;
+  }
+
+  /* ── CODE ────────────────────────────────── */
+  pre {
+    background: #0c0c0c;
+    color: #e2dfd9;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.68;
+    padding: 22px 26px;
+    border-radius: 2px;
+    overflow-x: auto;
+    margin: 16px 0;
+    position: relative;
+  }
+  pre .lang-badge {
+    position: absolute;
+    top: 10px; right: 14px;
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #555;
+  }
+  code { font-family: var(--mono); font-size: 0.87em; }
+  p code, li code {
+    background: #eeebe5;
+    padding: 1px 6px;
+    border-radius: 2px;
+    color: var(--accent2);
+  }
+
+  /* syntax colours */
+  .kw  { color: #e06c75; }
+  .fn  { color: #61afef; }
+  .kwd { color: #c678dd; }   /* yield / async / await */
+  .st  { color: #98c379; }
+  .cm  { color: #5c6370; font-style: italic; }
+  .nb  { color: #e5c07b; }
+  .op  { color: #56b6c2; }
+  .dec { color: #c678dd; }
+
+  /* ── CASES GRID ──────────────────────────── */
+  .cases-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin: 20px 0;
+  }
+  @media(max-width:640px){ .cases-grid { grid-template-columns: 1fr; } }
+  .case-card {
+    border: 1.5px solid var(--border);
+    border-radius: 2px;
+    padding: 16px 18px;
+    background: var(--bg-warm);
+  }
+  .case-card .cnum {
+    font-family: var(--mono);
+    font-size: 9.5px;
+    color: var(--accent);
+    letter-spacing: 0.16em;
+    margin-bottom: 6px;
+  }
+  .case-card strong { font-size: 13.5px; display: block; margin-bottom: 4px; color: var(--ink); }
+  .case-card span { font-size: 13px; color: var(--ink-soft); }
+
+  /* ── TABLE ───────────────────────────────── */
+  .table-wrap { overflow-x: auto; margin: 24px 0; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  thead {
+    background: var(--ink);
+    color: #fff;
+  }
+  thead th {
+    padding: 12px 14px;
+    text-align: left;
+    font-family: var(--mono);
+    font-size: 9.5px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+  tbody tr { border-bottom: 1px solid var(--border); }
+  tbody tr:nth-child(even) { background: var(--bg-warm); }
+  tbody tr:hover { background: #f0ece5; }
+  td {
+    padding: 12px 14px;
+    vertical-align: top;
+    line-height: 1.5;
+    color: var(--ink-soft);
+  }
+  td:first-child {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--accent);
+    white-space: nowrap;
+    font-weight: 500;
+  }
+  td strong { color: var(--ink); font-weight: 600; }
+  td code {
+    background: #eeebe5;
+    padding: 1px 5px;
+    border-radius: 2px;
+    color: var(--blue);
+    font-size: 11px;
+  }
+
+  /* ── GENERATOR BLOCKS ────────────────────── */
+  .gen-block {
+    margin-bottom: 52px;
+    border: 1.5px solid var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .gen-header {
+    background: var(--ink);
+    color: #fff;
+    padding: 14px 22px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .gen-header .gnum  { font-family: var(--mono); font-size: 11px; color: #666; }
+  .gen-header .gname { font-family: var(--mono); font-size: 14.5px; color: #98c379; font-weight: 500; }
+  .gen-header .gtag  {
+    margin-left: auto;
+    font-family: var(--mono);
+    font-size: 9.5px;
+    letter-spacing: 0.12em;
+    color: #555;
+    text-transform: uppercase;
+  }
+  .gen-body { padding: 20px 22px; background: var(--bg); }
+  .gen-body p { font-size: 13.5px; margin-bottom: 10px; }
+  .gen-body pre { margin: 0; border-radius: 0; }
+
+  /* ── DIVIDER ─────────────────────────────── */
+  .rule { border: none; border-top: 1.5px solid var(--border); margin: 60px 0; }
+
+  /* ── FOOTER ──────────────────────────────── */
+  footer {
+    border-top: 3px double var(--ink);
+    padding-top: 24px;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    color: var(--ink-muted);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════ HEADER ══════════ -->
+<header>
+  <div class="header-eyebrow">Python Engineering · Reference Notes</div>
+  <h1>Python<br/><em>Generators</em></h1>
+  <p class="header-desc">A complete field reference for RAG, LLM &amp; ML production systems — definitions, syntax, use-cases, and real project code for the top 10 generators.</p>
+  <div class="badge-row">
+    <span class="badge badge-dark">10 Generators</span>
+    <span class="badge badge-green">RAG</span>
+    <span class="badge badge-green">LLM</span>
+    <span class="badge badge-brown">ML</span>
+  </div>
+</header>
+
+
+<!-- ══════════ 01 · DEFINITION ══════════ -->
+<section id="definition">
+  <div class="section-tag">01 · Foundation</div>
+  <h2>What is a Generator?</h2>
+
+  <p>A <strong>generator</strong> is a special kind of iterator in Python that produces values <em>lazily</em> — one at a time, on demand — instead of computing and storing everything in memory at once. A generator function uses the <code>yield</code> keyword instead of <code>return</code>; each call to <code>next()</code> resumes execution from where it last paused.</p>
+
+  <div class="callout green">
+    <div class="callout-label">Core Idea</div>
+    <p>A generator suspends its own execution at every <code>yield</code>, hands a value to the caller, and remembers its entire local state (variables, instruction pointer) until the next call. This makes infinite sequences and massive data pipelines possible with O(1) memory.</p>
+  </div>
+
+  <p>There are three forms: <strong>generator functions</strong> (use <code>yield</code>), <strong>generator expressions</strong> (inline comprehension-style), and <strong>async generators</strong> (use <code>async def</code> + <code>yield</code>).</p>
+
+  <div class="syntax-box">
+    <div class="slabel">Generator Function — Anatomy</div>
+<pre><span class="kw">def</span> <span class="fn">my_generator</span>(n: <span class="nb">int</span>):
+    <span class="cm"># setup code runs once</span>
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="nb">range</span>(n):
+        <span class="cm"># pauses here, yields value to caller</span>
+        <span class="kwd">yield</span> i * i          <span class="cm"># resumes on next()</span>
+    <span class="cm"># teardown runs after last yield</span>
+
+gen = my_generator(<span class="nb">5</span>)    <span class="cm"># returns generator object — no work done yet</span>
+<span class="nb">next</span>(gen)               <span class="cm"># → 0  (runs until first yield)</span>
+<span class="nb">next</span>(gen)               <span class="cm"># → 1  (resumes from yield)</span>
+<span class="kw">for</span> v <span class="kw">in</span> my_generator(<span class="nb">5</span>): <span class="nb">print</span>(v)  <span class="cm"># 0 1 4 9 16</span>
+<span class="lang-badge">python</span></pre>
+  </div>
+
+  <h3>Generator vs Regular Function</h3>
+<pre><span class="cm"># Regular function — loads ALL items into memory</span>
+<span class="kw">def</span> <span class="fn">get_all_chunks</span>(docs): <span class="kw">return</span> [chunk <span class="kw">for</span> doc <span class="kw">in</span> docs <span class="kw">for</span> chunk <span class="kw">in</span> doc]
+
+<span class="cm"># Generator — yields one chunk at a time, O(1) memory</span>
+<span class="kw">def</span> <span class="fn">stream_chunks</span>(docs):
+    <span class="kw">for</span> doc <span class="kw">in</span> docs:
+        <span class="kw">for</span> chunk <span class="kw">in</span> doc:
+            <span class="kwd">yield</span> chunk
+<span class="lang-badge">python</span></pre>
+
+  <h3>Generator Expression</h3>
+<pre><span class="cm"># List comprehension — materialises entire list</span>
+squares_list = [x**<span class="nb">2</span> <span class="kw">for</span> x <span class="kw">in</span> <span class="nb">range</span>(<span class="nb">1_000_000</span>)]   <span class="cm"># ~8 MB RAM</span>
+
+<span class="cm"># Generator expression — lazy, parentheses instead of brackets</span>
+squares_gen  = (x**<span class="nb">2</span> <span class="kw">for</span> x <span class="kw">in</span> <span class="nb">range</span>(<span class="nb">1_000_000</span>))   <span class="cm"># ~128 bytes</span>
+<span class="lang-badge">python</span></pre>
+</section>
+
+
+<!-- ══════════ 02 · WHEN TO USE ══════════ -->
+<section id="when">
+  <div class="section-tag">02 · Applicability</div>
+  <h2>When Must You Use a Generator?</h2>
+
+  <p>Use a generator whenever data is too large to fit in memory, arrives incrementally, or needs to be processed in a pipeline. Classic production triggers:</p>
+
+  <div class="cases-grid">
+    <div class="case-card">
+      <div class="cnum">CASE 01</div>
+      <strong>Streaming LLM tokens</strong>
+      <span>Yield tokens one-by-one from the model API for real-time streaming responses.</span>
+    </div>
+    <div class="case-card">
+      <div class="cnum">CASE 02</div>
+      <strong>Large dataset batching</strong>
+      <span>Stream millions of training samples in mini-batches without loading the full dataset.</span>
+    </div>
+    <div class="case-card">
+      <div class="cnum">CASE 03</div>
+      <strong>Document chunking pipelines</strong>
+      <span>Lazily chunk, clean, and embed large corpora in RAG ingestion pipelines.</span>
+    </div>
+    <div class="case-card">
+      <div class="cnum">CASE 04</div>
+      <strong>Infinite sequences</strong>
+      <span>Produce an unbounded sequence (IDs, steps, epochs) that the caller controls when to stop.</span>
+    </div>
+    <div class="case-card">
+      <div class="cnum">CASE 05</div>
+      <strong>Async data streams</strong>
+      <span>Async generators for concurrent I/O — reading from queues, sockets, or async APIs.</span>
+    </div>
+    <div class="case-card">
+      <div class="cnum">CASE 06</div>
+      <strong>Chaining transforms</strong>
+      <span>Compose multiple lazy transformations into a zero-copy pipeline using <code>itertools</code>.</span>
+    </div>
+    <div class="case-card">
+      <div class="cnum">CASE 07</div>
+      <strong>Memory-constrained inference</strong>
+      <span>Stream inference results over large validation sets without OOM on GPU nodes.</span>
+    </div>
+    <div class="case-card">
+      <div class="cnum">CASE 08</div>
+      <strong>Data augmentation on-the-fly</strong>
+      <span>Apply random augmentations lazily during training instead of pre-generating all variants.</span>
+    </div>
+  </div>
+
+  <div class="callout brown">
+    <div class="callout-label">Rule of Thumb</div>
+    <p>If the full result set would be larger than available RAM, or if the caller doesn't always need every item, use a generator. It is always cheaper to not produce a value than to produce and discard it.</p>
+  </div>
+</section>
+
+
+<!-- ══════════ 03 · SYNTAX ══════════ -->
+<section id="syntax">
+  <div class="section-tag">03 · Syntax Reference</div>
+  <h2>Generator Syntax Patterns</h2>
+
+  <div class="syntax-box">
+    <div class="slabel">Pattern 1 — Generator function (yield)</div>
+<pre><span class="kw">def</span> <span class="fn">gen_function</span>(items):
+    <span class="kw">for</span> item <span class="kw">in</span> items:
+        <span class="kwd">yield</span> transform(item)</pre>
+  </div>
+
+  <div class="syntax-box">
+    <div class="slabel">Pattern 2 — Generator expression</div>
+<pre>gen = (transform(x) <span class="kw">for</span> x <span class="kw">in</span> items <span class="kw">if</span> condition(x))</pre>
+  </div>
+
+  <div class="syntax-box">
+    <div class="slabel">Pattern 3 — yield from (delegation)</div>
+<pre><span class="kw">def</span> <span class="fn">flat_gen</span>(nested):
+    <span class="kw">for</span> sub <span class="kw">in</span> nested:
+        <span class="kwd">yield from</span> sub      <span class="cm"># delegates to inner iterable</span></pre>
+  </div>
+
+  <div class="syntax-box">
+    <div class="slabel">Pattern 4 — Async generator</div>
+<pre><span class="kw">async def</span> <span class="fn">async_gen</span>(source):
+    <span class="kw">async for</span> item <span class="kw">in</span> source:
+        <span class="kwd">yield</span> item
+
+<span class="cm"># consumption:</span>
+<span class="kw">async for</span> val <span class="kw">in</span> async_gen(source): ...</pre>
+  </div>
+
+  <div class="syntax-box">
+    <div class="slabel">Pattern 5 — send() bidirectional generator</div>
+<pre><span class="kw">def</span> <span class="fn">accumulator</span>():
+    total = <span class="nb">0</span>
+    <span class="kw">while</span> <span class="nb">True</span>:
+        value = <span class="kwd">yield</span> total   <span class="cm"># yield sends total out, receives value in</span>
+        total += value
+
+acc = accumulator()
+<span class="nb">next</span>(acc)       <span class="cm"># prime the generator → 0</span>
+acc.send(<span class="nb">10</span>)    <span class="cm"># → 10</span>
+acc.send(<span class="nb">5</span>)     <span class="cm"># → 15</span></pre>
+  </div>
+</section>
+
+
+<!-- ══════════ 04 · TABLE ══════════ -->
+<section id="table">
+  <div class="section-tag">04 · Quick Reference</div>
+  <h2>Top 10 Generators — Master Table</h2>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Generator</th>
+          <th>Definition</th>
+          <th>What it does</th>
+          <th>When to use</th>
+          <th>General Syntax</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>01</td>
+          <td><code>yield-based streaming</code></td>
+          <td><strong>Generator function</strong> that uses <code>yield</code> to emit values one at a time, suspending between each.</td>
+          <td>Converts a function into a lazy iterator. Caller pulls values on demand via <code>next()</code> or a <code>for</code> loop.</td>
+          <td>Streaming LLM output tokens, chunking documents, processing log lines one-by-one.</td>
+          <td><code>def gen():<br/>  for x in data: yield x</code></td>
+        </tr>
+        <tr>
+          <td>02</td>
+          <td><code>async for generators</code></td>
+          <td><strong>Async generator function</strong> using <code>async def</code> + <code>yield</code>; consumed with <code>async for</code>.</td>
+          <td>Produces values lazily inside an async event loop, allowing <code>await</code> between yields.</td>
+          <td>Streaming tokens from async LLM APIs, reading async queues, async file I/O pipelines.</td>
+          <td><code>async def agen():<br/>  async for x in src: yield x</code></td>
+        </tr>
+        <tr>
+          <td>03</td>
+          <td><code>itertools.chain()</code></td>
+          <td>Chains multiple iterables end-to-end into a <strong>single lazy iterator</strong> with no copying.</td>
+          <td>Iterates through the first iterable until exhausted, then seamlessly continues to the next.</td>
+          <td>Merging multiple document corpora, combining dataset splits, flattening retrieval results.</td>
+          <td><code>from itertools import chain<br/>chain(iter1, iter2, iter3)</code></td>
+        </tr>
+        <tr>
+          <td>04</td>
+          <td><code>itertools.islice()</code></td>
+          <td>Returns a <strong>lazy slice</strong> of an iterator — works on any iterable, even infinite ones.</td>
+          <td>Takes <code>start</code>, <code>stop</code>, <code>step</code> like list slicing but without materialising the sequence.</td>
+          <td>Sampling the first N items from a corpus, windowed evaluation, debug subsets of data.</td>
+          <td><code>from itertools import islice<br/>islice(gen, 0, 100)</code></td>
+        </tr>
+        <tr>
+          <td>05</td>
+          <td><code>batched() / chunked()</code></td>
+          <td>Groups a flat iterator into <strong>fixed-size batches</strong>, yielding one batch (list/tuple) at a time.</td>
+          <td>Produces tuples of <code>n</code> consecutive items; last batch may be shorter than <code>n</code>.</td>
+          <td>Mini-batch training loops, batched embedding API calls, bulk vector DB upserts.</td>
+          <td><code>from itertools import batched<br/>batched(items, 32)</code></td>
+        </tr>
+        <tr>
+          <td>06</td>
+          <td><code>DataLoader generator</code></td>
+          <td>PyTorch's <code>DataLoader</code> wraps a <code>Dataset</code> in a <strong>multi-process generator pipeline</strong>.</td>
+          <td>Shuffles, batches, pads, and prefetches samples using background workers; yields batched tensors.</td>
+          <td>All supervised / unsupervised PyTorch training and evaluation loops in ML projects.</td>
+          <td><code>DataLoader(dataset, batch_size=32,<br/>shuffle=True, num_workers=4)</code></td>
+        </tr>
+        <tr>
+          <td>07</td>
+          <td><code>tf.data.Dataset</code></td>
+          <td>TensorFlow's lazy <strong>data pipeline API</strong> — a composable generator graph executed by the tf runtime.</td>
+          <td>Chains map / filter / batch / prefetch operations into a fused, optimised data pipeline.</td>
+          <td>TensorFlow / Keras training pipelines; large-scale image or text datasets with GPU prefetching.</td>
+          <td><code>tf.data.Dataset.from_generator(gen)<br/>  .map(fn).batch(32).prefetch(2)</code></td>
+        </tr>
+        <tr>
+          <td>08</td>
+          <td><code>itertools.chain.from_iterable()</code></td>
+          <td>Flattens a <strong>lazy iterable of iterables</strong> into a single flat iterator — one level of nesting.</td>
+          <td>Same as <code>chain(*iterables)</code> but accepts a single outer iterable, so the inner lists are also lazy.</td>
+          <td>Flattening chunked document lists, expanding search results, merging nested batch outputs.</td>
+          <td><code>chain.from_iterable(<br/>  chunks_per_doc for doc in corpus)</code></td>
+        </tr>
+        <tr>
+          <td>09</td>
+          <td><code>zip() / enumerate()</code></td>
+          <td>Built-in lazy generators: <code>zip</code> pairs items from multiple iterables; <code>enumerate</code> adds an index.</td>
+          <td><code>zip</code> stops at the shortest iterable. <code>enumerate</code> yields <code>(index, value)</code> tuples. Both produce lazily.</td>
+          <td>Pairing queries with retrieved docs, indexing training samples, parallel iteration over predictions and labels.</td>
+          <td><code>for i, (q, doc) in enumerate(zip(queries, docs)): ...</code></td>
+        </tr>
+        <tr>
+          <td>10</td>
+          <td><code>async_generator</code></td>
+          <td>An <strong>explicit async generator</strong> object — the result of calling an <code>async def</code> function that contains <code>yield</code>.</td>
+          <td>Supports <code>__aiter__</code> / <code>__anext__</code> protocol; can be used with <code>async for</code> or <code>aiter()</code> / <code>anext()</code>.</td>
+          <td>Server-sent events for LLM streaming APIs, async message-queue consumers, async web-scraping pipelines.</td>
+          <td><code>async def stream():<br/>  yield token<br/>async for t in stream(): ...</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+
+<!-- ══════════ 05 · CODE EXAMPLES ══════════ -->
+<section id="code">
+  <div class="section-tag">05 · Project Code</div>
+  <h2>Real Project Code Examples</h2>
+  <p>Short, meaningful snippets showing each generator in its actual RAG / LLM / ML project context.</p>
+
+  <!-- 1 -->
+  <div class="gen-block">
+    <div class="gen-header">
+      <span class="gnum">01</span>
+      <span class="gname">yield-based streaming generator</span>
+      <span class="gtag">RAG · LLM · ML</span>
+    </div>
+    <div class="gen-body">
+      <p>Lazily chunks a corpus of documents for a RAG ingestion pipeline — processes one document at a time, never loads all chunks into memory.</p>
+<pre><span class="kw">from</span> typing <span class="kw">import</span> Iterator
+
+<span class="kw">def</span> <span class="fn">chunk_corpus</span>(
+    file_paths: <span class="nb">list</span>[<span class="nb">str</span>],
+    chunk_size: <span class="nb">int</span> = <span class="nb">512</span>,
+    overlap: <span class="nb">int</span> = <span class="nb">64</span>,
+) -> Iterator[<span class="nb">dict</span>]:
+    <span class="kw">for</span> path <span class="kw">in</span> file_paths:
+        <span class="kw">with</span> <span class="nb">open</span>(path) <span class="kw">as</span> f:
+            text = f.read()
+        start = <span class="nb">0</span>
+        <span class="kw">while</span> start < <span class="nb">len</span>(text):
+            chunk = text[start : start + chunk_size]
+            <span class="kwd">yield</span> {<span class="st">"source"</span>: path, <span class="st">"text"</span>: chunk, <span class="st">"start"</span>: start}
+            start += chunk_size - overlap   <span class="cm"># sliding window</span>
+
+<span class="cm"># Pipeline: stream chunks → embed → upsert — zero intermediate lists</span>
+<span class="kw">for</span> chunk <span class="kw">in</span> chunk_corpus(all_pdfs, chunk_size=<span class="nb">512</span>):
+    vector_store.upsert(embedder.embed(chunk[<span class="st">"text"</span>]), chunk)
+<span class="lang-badge">python</span></pre>
+    </div>
+  </div>
+
+  <!-- 2 -->
+  <div class="gen-block">
+    <div class="gen-header">
+      <span class="gnum">02</span>
+      <span class="gname">async for generators</span>
+      <span class="gtag">LLM</span>
+    </div>
+    <div class="gen-body">
+      <p>Streams tokens from OpenAI's async API and yields them to a FastAPI streaming response — enables real-time character-by-character output.</p>
+<pre><span class="kw">import</span> openai
+<span class="kw">from</span> fastapi.responses <span class="kw">import</span> StreamingResponse
+
+<span class="kw">async def</span> <span class="fn">stream_llm_tokens</span>(prompt: <span class="nb">str</span>):
+    <span class="st">"""Async generator: yields each token chunk as it arrives."""</span>
+    client = openai.AsyncOpenAI()
+    stream = <span class="kw">await</span> client.chat.completions.create(
+        model=<span class="st">"gpt-4o"</span>,
+        messages=[{<span class="st">"role"</span>: <span class="st">"user"</span>, <span class="st">"content"</span>: prompt}],
+        stream=<span class="nb">True</span>,
+    )
+    <span class="kw">async for</span> chunk <span class="kw">in</span> stream:
+        delta = chunk.choices[<span class="nb">0</span>].delta.content
+        <span class="kw">if</span> delta:
+            <span class="kwd">yield</span> delta           <span class="cm"># push token to caller immediately</span>
+
+<span class="cm"># FastAPI endpoint wrapping the async generator</span>
+<span class="kw">async def</span> <span class="fn">chat_stream</span>(prompt: <span class="nb">str</span>):
+    <span class="kw">return</span> StreamingResponse(
+        stream_llm_tokens(prompt),
+        media_type=<span class="st">"text/event-stream"</span>,
+    )
+<span class="lang-badge">python</span></pre>
+    </div>
+  </div>
+
+  <!-- 3 -->
+  <div class="gen-block">
+    <div class="gen-header">
+      <span class="gnum">03</span>
+      <span class="gname">itertools.chain()</span>
+      <span class="gtag">RAG · ML</span>
+    </div>
+    <div class="gen-body">
+      <p>Merges multiple retriever result lists into one flat lazy stream for re-ranking — no intermediate concatenated list needed.</p>
+<pre><span class="kw">from</span> itertools <span class="kw">import</span> chain
+
+<span class="kw">def</span> <span class="fn">hybrid_retrieve</span>(
+    query: <span class="nb">str</span>,
+    dense_retriever,
+    sparse_retriever,
+    top_k: <span class="nb">int</span> = <span class="nb">20</span>,
+) -> <span class="nb">list</span>[<span class="nb">dict</span>]:
+    dense_results  = dense_retriever.retrieve(query, top_k)   <span class="cm"># list</span>
+    sparse_results = sparse_retriever.retrieve(query, top_k)  <span class="cm"># list</span>
+    web_results    = web_retriever.retrieve(query, top_k // <span class="nb">2</span>)
+
+    <span class="cm"># chain merges all three lazily — one iterator, no copy</span>
+    all_docs = chain(dense_results, sparse_results, web_results)
+
+    seen, unique = <span class="nb">set</span>(), []
+    <span class="kw">for</span> doc <span class="kw">in</span> all_docs:
+        <span class="kw">if</span> doc[<span class="st">"id"</span>] <span class="kw">not in</span> seen:
+            seen.add(doc[<span class="st">"id"</span>])
+            unique.append(doc)
+    <span class="kw">return</span> reranker.rerank(query, unique)[:top_k]
+<span class="lang-badge">python</span></pre>
+    </div>
+  </div>
+
+  <!-- 4 -->
+  <div class="gen-block">
+    <div class="gen-header">
+      <span class="gnum">04</span>
+      <span class="gname">itertools.islice()</span>
+      <span class="gtag">RAG · ML</span>
+    </div>
+    <div class="gen-body">
+      <p>Takes the first N chunks from an infinite or very large corpus generator without loading the rest — essential for debugging pipelines.</p>
+<pre><span class="kw">from</span> itertools <span class="kw">import</span> islice
+
+<span class="kw">def</span> <span class="fn">evaluate_pipeline</span>(corpus_gen, retriever, n_samples=<span class="nb">200</span>):
+    <span class="st">"""Run evaluation on first n_samples only — corpus_gen may be infinite."""</span>
+    hits = <span class="nb">0</span>
+    <span class="cm"># islice never materialises the full corpus — just takes 200 items</span>
+    <span class="kw">for</span> sample <span class="kw">in</span> islice(corpus_gen, n_samples):
+        docs = retriever.retrieve(sample[<span class="st">"query"</span>], top_k=<span class="nb">5</span>)
+        <span class="kw">if</span> sample[<span class="st">"answer_id"</span>] <span class="kw">in</span> {d[<span class="st">"id"</span>] <span class="kw">for</span> d <span class="kw">in</span> docs}:
+            hits += <span class="nb">1</span>
+    <span class="kw">return</span> hits / n_samples   <span class="cm"># recall@5</span>
+
+<span class="cm"># Usage: evaluate on first 200 from a 10M-sample corpus generator</span>
+recall = evaluate_pipeline(stream_corpus(<span class="st">"data/"</span>), retriever, <span class="nb">200</span>)
+<span class="lang-badge">python</span></pre>
+    </div>
+  </div>
+
+  <!-- 5 -->
+  <div class="gen-block">
+    <div class="gen-header">
+      <span class="gnum">05</span>
+      <span class="gname">batched() / chunked() generators</span>
+      <span class="gtag">RAG · LLM · ML</span>
+    </div>
+    <div class="gen-body">
+      <p>Groups a flat stream of texts into batches for efficient embedding API calls — avoids per-item round-trips to the embedding service.</p>
+<pre><span class="kw">from</span> itertools <span class="kw">import</span> batched   <span class="cm"># Python 3.12+</span>
+<span class="cm"># or: from more_itertools import chunked  (older Python)</span>
+
+<span class="kw">def</span> <span class="fn">batch_embed</span>(texts: <span class="nb">list</span>[<span class="nb">str</span>], model, batch_size: <span class="nb">int</span> = <span class="nb">64</span>):
+    <span class="st">"""Embed all texts in batches, yield (text, embedding) pairs."""</span>
+    <span class="kw">for</span> batch <span class="kw">in</span> batched(texts, batch_size):
+        <span class="cm"># one API call per batch instead of per text</span>
+        embeddings = model.encode(<span class="nb">list</span>(batch), batch_size=batch_size)
+        <span class="kw">yield from</span> <span class="nb">zip</span>(batch, embeddings)
+
+<span class="cm"># Index 1M chunks with 64-text batches → only 15,625 API calls</span>
+<span class="kw">for</span> text, emb <span class="kw">in</span> batch_embed(all_chunks, embedding_model):
+    vector_store.add(emb, metadata={<span class="st">"text"</span>: text})
+<span class="lang-badge">python</span></pre>
+    </div>
+  </div>
+
+  <!-- 6 -->
+  <div class="gen-block">
+    <div class="gen-header">
+      <span class="gnum">06</span>
+      <span class="gname">DataLoader generator pipeline</span>
+      <span class="gtag">ML</span>
+    </div>
+    <div class="gen-body">
+      <p>Custom PyTorch Dataset wired into a DataLoader — the training loop pulls one GPU-ready batch at a time with background prefetching.</p>
+<pre><span class="kw">import</span> torch
+<span class="kw">from</span> torch.utils.data <span class="kw">import</span> Dataset, DataLoader
+
+<span class="kw">class</span> <span class="fn">TextDataset</span>(Dataset):
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, file_path, tokenizer, max_len=<span class="nb">512</span>):
+        self.samples = <span class="nb">open</span>(file_path).readlines()  <span class="cm"># lines only</span>
+        self.tokenizer = tokenizer
+        self.max_len = max_len
+
+    <span class="kw">def</span> <span class="fn">__len__</span>(self): <span class="kw">return</span> <span class="nb">len</span>(self.samples)
+
+    <span class="kw">def</span> <span class="fn">__getitem__</span>(self, idx):
+        <span class="kw">return</span> self.tokenizer(
+            self.samples[idx].strip(),
+            truncation=<span class="nb">True</span>, max_length=self.max_len,
+            return_tensors=<span class="st">"pt"</span>,
+        )
+
+loader = DataLoader(
+    TextDataset(<span class="st">"train.txt"</span>, tokenizer),
+    batch_size=<span class="nb">32</span>, shuffle=<span class="nb">True</span>, num_workers=<span class="nb">4</span>, pin_memory=<span class="nb">True</span>,
+)
+
+<span class="cm"># Training loop — DataLoader acts as a generator</span>
+<span class="kw">for</span> epoch <span class="kw">in</span> <span class="nb">range</span>(<span class="nb">3</span>):
+    <span class="kw">for</span> batch <span class="kw">in</span> loader:          <span class="cm"># pulls next batch lazily</span>
+        loss = model(**batch).loss
+        loss.backward()
+        optimizer.step()
+<span class="lang-badge">python</span></pre>
+    </div>
+  </div>
+
+  <!-- 7 -->
+  <div class="gen-block">
+    <div class="gen-header">
+      <span class="gnum">07</span>
+      <span class="gname">tf.data.Dataset generators</span>
+      <span class="gtag">ML</span>
+    </div>
+    <div class="gen-body">
+      <p>Wraps a Python generator into a TensorFlow data pipeline with map, batch, and prefetch — fully fused and XLA-optimised.</p>
+<pre><span class="kw">import</span> tensorflow <span class="kw">as</span> tf
+
+<span class="kw">def</span> <span class="fn">sample_generator</span>(file_path: <span class="nb">str</span>):
+    <span class="st">"""Generator: yields (input_ids, label) numpy arrays."""</span>
+    <span class="kw">with</span> <span class="nb">open</span>(file_path) <span class="kw">as</span> f:
+        <span class="kw">for</span> line <span class="kw">in</span> f:
+            tokens, label = preprocess(line)
+            <span class="kwd">yield</span> tokens, label      <span class="cm"># one example at a time</span>
+
+dataset = (
+    tf.data.Dataset
+    .from_generator(
+        sample_generator,
+        args=(<span class="st">"train.jsonl"</span>,),
+        output_signature=(
+            tf.TensorSpec(shape=(<span class="nb">None</span>,), dtype=tf.int32),
+            tf.TensorSpec(shape=(), dtype=tf.int32),
+        ),
+    )
+    .shuffle(<span class="nb">10_000</span>)
+    .padded_batch(<span class="nb">32</span>)
+    .prefetch(tf.data.AUTOTUNE)   <span class="cm"># background GPU prefetch</span>
+)
+
+model.fit(dataset, epochs=<span class="nb">5</span>)
+<span class="lang-badge">python</span></pre>
+    </div>
+  </div>
+
+  <!-- 8 -->
+  <div class="gen-block">
+    <div class="gen-header">
+      <span class="gnum">08</span>
+      <span class="gname">itertools.chain.from_iterable()</span>
+      <span class="gtag">RAG · ML</span>
+    </div>
+    <div class="gen-body">
+      <p>Flattens a lazy stream of per-document chunk lists into a single flat token stream — no nested list accumulation.</p>
+<pre><span class="kw">from</span> itertools <span class="kw">import</span> chain
+
+<span class="kw">def</span> <span class="fn">iter_document_chunks</span>(doc_path: <span class="nb">str</span>):
+    <span class="st">"""Generator of chunk-lists, one list per document."""</span>
+    <span class="kw">for</span> doc <span class="kw">in</span> load_documents(doc_path):
+        <span class="kwd">yield</span> split_into_chunks(doc, size=<span class="nb">256</span>)  <span class="cm"># yields a list each time</span>
+
+<span class="cm"># chain.from_iterable flattens lazily — no [[...],[...]] accumulation</span>
+flat_chunks = chain.from_iterable(iter_document_chunks(<span class="st">"corpus/"</span>))
+
+<span class="cm"># Can now iterate uniformly over ALL chunks across ALL documents</span>
+total = <span class="nb">0</span>
+<span class="kw">for</span> chunk <span class="kw">in</span> flat_chunks:
+    vector_store.add(embed(chunk))
+    total += <span class="nb">1</span>
+<span class="nb">print</span>(<span class="st">f"Indexed {total} chunks"</span>)
+<span class="lang-badge">python</span></pre>
+    </div>
+  </div>
+
+  <!-- 9 -->
+  <div class="gen-block">
+    <div class="gen-header">
+      <span class="gnum">09</span>
+      <span class="gname">zip() / enumerate()</span>
+      <span class="gtag">RAG · LLM · ML</span>
+    </div>
+    <div class="gen-body">
+      <p>Pairs queries with retrieved documents and tracks indices for logging — both built-ins produce lazily, zero extra memory.</p>
+<pre><span class="kw">def</span> <span class="fn">evaluate_rag</span>(queries, ground_truths, retriever, top_k=<span class="nb">5</span>):
+    <span class="st">"""Compute Hit Rate and MRR over a query set."""</span>
+    hits, reciprocal_ranks = [], []
+
+    <span class="cm"># enumerate gives (index, query) lazily</span>
+    <span class="cm"># zip pairs query with its ground truth lazily</span>
+    <span class="kw">for</span> i, (query, truth) <span class="kw">in</span> <span class="nb">enumerate</span>(<span class="nb">zip</span>(queries, ground_truths)):
+        docs = retriever.retrieve(query, top_k=top_k)
+        ids  = [d[<span class="st">"id"</span>] <span class="kw">for</span> d <span class="kw">in</span> docs]
+
+        hit = truth <span class="kw">in</span> ids
+        hits.append(<span class="nb">int</span>(hit))
+        rank = ids.index(truth) + <span class="nb">1</span> <span class="kw">if</span> hit <span class="kw">else</span> <span class="nb">0</span>
+        reciprocal_ranks.append(<span class="nb">1</span> / rank <span class="kw">if</span> rank <span class="kw">else</span> <span class="nb">0</span>)
+
+        <span class="kw">if</span> i % <span class="nb">100</span> == <span class="nb">0</span>:
+            <span class="nb">print</span>(<span class="st">f"[{i}] HR={sum(hits)/len(hits):.3f}"</span>)
+
+    <span class="kw">return</span> {<span class="st">"hit_rate"</span>: sum(hits)/len(hits),
+            <span class="st">"mrr"</span>:      sum(reciprocal_ranks)/len(reciprocal_ranks)}
+<span class="lang-badge">python</span></pre>
+    </div>
+  </div>
+
+  <!-- 10 -->
+  <div class="gen-block">
+    <div class="gen-header">
+      <span class="gnum">10</span>
+      <span class="gname">async_generator</span>
+      <span class="gtag">LLM</span>
+    </div>
+    <div class="gen-body">
+      <p>Full async generator pipeline for a Server-Sent Events (SSE) endpoint — streams LLM tokens to the browser with back-pressure support.</p>
+<pre><span class="kw">import</span> asyncio
+<span class="kw">from</span> fastapi <span class="kw">import</span> APIRouter
+<span class="kw">from</span> fastapi.responses <span class="kw">import</span> StreamingResponse
+<span class="kw">from</span> sse_starlette.sse <span class="kw">import</span> EventSourceResponse
+
+router = APIRouter()
+
+<span class="kw">async def</span> <span class="fn">token_event_generator</span>(prompt: <span class="nb">str</span>):
+    <span class="st">"""Async generator that emits SSE-formatted token events."""</span>
+    <span class="kw">async for</span> token <span class="kw">in</span> stream_llm_tokens(prompt):   <span class="cm"># from example 02</span>
+        <span class="kwd">yield</span> {
+            <span class="st">"event"</span>: <span class="st">"token"</span>,
+            <span class="st">"data"</span>: token,
+        }
+        <span class="kw">await</span> asyncio.sleep(<span class="nb">0</span>)   <span class="cm"># yield control to event loop</span>
+
+    <span class="kwd">yield</span> {<span class="st">"event"</span>: <span class="st">"done"</span>, <span class="st">"data"</span>: <span class="st">"[END]"</span>}   <span class="cm"># sentinel event</span>
+
+<span class="dec">@router.post</span>(<span class="st">"/stream"</span>)
+<span class="kw">async def</span> <span class="fn">stream_endpoint</span>(prompt: <span class="nb">str</span>):
+    <span class="cm"># EventSourceResponse consumes the async generator</span>
+    <span class="kw">return</span> EventSourceResponse(token_event_generator(prompt))
+
+<span class="cm"># Client receives: event: token\ndata: Hello\n\nevent: token\ndata: world\n\n...</span>
+<span class="lang-badge">python</span></pre>
+    </div>
+  </div>
+
+</section>
+
+<hr class="rule"/>
+
+<footer>
+  <span>Python Generators — Field Notes</span>
+  <span>RAG · LLM · ML Production Reference</span>
+  <span>10 generators · 10 examples</span>
+</footer>
+
+</body>
+</html>
