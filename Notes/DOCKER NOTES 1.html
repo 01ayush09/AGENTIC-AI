@@ -1,0 +1,1274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Docker Foundations — Zero to Ready</title>
+<link href="https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@400;500;600;700;800;900&family=Fira+Code:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0f0e0c;
+  --ink2:#4a4640;
+  --ink3:#8a8480;
+  --paper:#f9f7f3;
+  --paper2:#f1ede5;
+  --paper3:#e8e2d8;
+  --card:#ffffff;
+  --border:rgba(0,0,0,0.09);
+  --border2:rgba(0,0,0,0.15);
+
+  --fire:#c94a00;
+  --fire2:#fff0e8;
+  --sky:#1358a8;
+  --sky2:#e8f0fc;
+  --leaf:#1a6e3a;
+  --leaf2:#e8f5ee;
+  --gold:#9a6800;
+  --gold2:#fdf4e0;
+  --plum:#6e2a8a;
+  --plum2:#f5eafb;
+  --rust:#8a3020;
+  --rust2:#fdf0ee;
+  --teal:#0e6e6e;
+  --teal2:#e8f8f8;
+
+  --mono:'Fira Code',monospace;
+  --head:'Cabinet Grotesk',sans-serif;
+  --serif:'Instrument Serif',serif;
+  --body:'Cabinet Grotesk',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.75;overflow-x:hidden;}
+
+/* PROGRESS */
+#prog{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--fire),var(--sky));z-index:400;transition:width .08s;}
+
+/* NAV */
+nav{
+  position:fixed;top:0;left:0;width:264px;height:100vh;
+  background:var(--card);border-right:1px solid var(--border2);
+  overflow-y:auto;z-index:200;display:flex;flex-direction:column;
+}
+.nav-brand{
+  padding:22px 20px 18px;
+  border-bottom:1px solid var(--border);
+}
+.nav-brand .logo{
+  font-size:18px;font-weight:900;letter-spacing:-0.5px;
+  color:var(--ink);line-height:1.1;
+}
+.nav-brand .logo .accent{color:var(--fire);}
+.nav-brand .sub{font-size:11px;color:var(--ink3);margin-top:3px;font-weight:500;}
+nav ul{list-style:none;padding:10px 0;flex:1;}
+.nav-sec{
+  padding:14px 20px 4px;
+  font-size:9.5px;font-weight:700;letter-spacing:1.5px;
+  color:var(--ink3);text-transform:uppercase;
+}
+nav li a{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 20px;
+  font-size:13px;font-weight:600;color:var(--ink2);
+  text-decoration:none;transition:all .12s;
+  border-left:2.5px solid transparent;
+}
+nav li a:hover{color:var(--ink);background:var(--paper2);}
+nav li a.on{color:var(--fire);border-left-color:var(--fire);background:rgba(201,74,0,0.05);}
+nav li a .ico{font-size:15px;width:20px;text-align:center;flex-shrink:0;}
+.nav-foot{
+  padding:14px 20px;border-top:1px solid var(--border);
+  font-size:11.5px;color:var(--ink3);line-height:1.6;
+}
+
+/* MAIN */
+main{margin-left:264px;padding:52px 60px 80px;max-width:1120px;}
+
+/* HERO */
+.hero{
+  background:var(--ink);color:#fff;
+  border-radius:20px;padding:44px 48px;
+  margin-bottom:64px;
+  position:relative;overflow:hidden;
+}
+.hero::before{
+  content:'🐳';
+  position:absolute;right:-20px;top:-30px;
+  font-size:180px;opacity:0.07;
+  line-height:1;
+}
+.hero-label{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(255,255,255,0.1);
+  color:rgba(255,255,255,0.7);
+  font-size:11px;font-weight:700;letter-spacing:1.2px;
+  text-transform:uppercase;padding:4px 12px;border-radius:20px;
+  margin-bottom:18px;
+}
+.hero h1{
+  font-size:42px;font-weight:900;letter-spacing:-1.5px;
+  line-height:1.05;margin-bottom:14px;
+}
+.hero h1 span{color:#ff8a50;}
+.hero p{color:rgba(255,255,255,0.65);font-size:16px;max-width:540px;margin-bottom:28px;}
+.journey{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.jstep{
+  display:flex;align-items:center;gap:7px;
+  background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);
+  border-radius:8px;padding:8px 14px;
+  font-size:12.5px;font-weight:600;color:rgba(255,255,255,0.8);
+}
+.jstep.now{background:var(--fire);border-color:var(--fire);color:#fff;}
+.jarr{color:rgba(255,255,255,0.3);font-size:18px;}
+
+/* SECTION */
+section{margin-bottom:72px;scroll-margin-top:28px;}
+.sec-hdr{display:flex;align-items:center;gap:14px;margin-bottom:28px;padding-bottom:16px;border-bottom:2px solid var(--border);}
+.sec-num{
+  width:38px;height:38px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:13px;font-weight:600;
+  flex-shrink:0;color:#fff;
+}
+.n-fire{background:var(--fire);}
+.n-sky{background:var(--sky);}
+.n-leaf{background:var(--leaf);}
+.n-gold{background:var(--gold);}
+.n-plum{background:var(--plum);}
+.n-teal{background:var(--teal);}
+.n-rust{background:var(--rust);}
+.n-ink{background:var(--ink);}
+h2{font-family:var(--head);font-size:27px;font-weight:800;letter-spacing:-0.5px;}
+h3{font-size:16px;font-weight:700;color:var(--ink);margin:24px 0 10px;}
+p.lead{font-size:15.5px;color:var(--ink2);margin-bottom:18px;}
+
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:20px 24px;margin-bottom:16px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px;}
+.card.stripe-fire{border-left:3px solid var(--fire);background:var(--fire2);border-radius:0 12px 12px 0;}
+.card.stripe-sky{border-left:3px solid var(--sky);background:var(--sky2);border-radius:0 12px 12px 0;}
+.card.stripe-leaf{border-left:3px solid var(--leaf);background:var(--leaf2);border-radius:0 12px 12px 0;}
+.card.stripe-gold{border-left:3px solid var(--gold);background:var(--gold2);border-radius:0 12px 12px 0;}
+.card.stripe-plum{border-left:3px solid var(--plum);background:var(--plum2);border-radius:0 12px 12px 0;}
+.card.stripe-teal{border-left:3px solid var(--teal);background:var(--teal2);border-radius:0 12px 12px 0;}
+.card p{color:var(--ink2);font-size:14px;}
+
+/* STORY BOX — special */
+.story-block{
+  background:var(--ink);color:rgba(255,255,255,0.85);
+  border-radius:16px;padding:32px 36px;
+  margin-bottom:20px;
+  position:relative;overflow:hidden;
+}
+.story-block::after{
+  content:'';position:absolute;
+  top:0;right:0;width:200px;height:200px;
+  background:radial-gradient(circle,rgba(255,138,80,0.15) 0%,transparent 70%);
+  border-radius:50%;
+}
+.story-scene{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(255,138,80,0.2);color:#ff8a50;
+  font-size:11px;font-weight:700;letter-spacing:1px;
+  text-transform:uppercase;padding:4px 12px;border-radius:20px;
+  margin-bottom:16px;
+}
+.story-block h3{
+  color:#fff;font-size:18px;font-weight:800;
+  margin:0 0 14px;letter-spacing:-0.3px;
+}
+.story-block p{
+  font-size:14.5px;line-height:1.85;
+  color:rgba(255,255,255,0.78);margin-bottom:12px;
+}
+.story-block p:last-child{margin-bottom:0;}
+.story-block strong{color:#ff8a50;}
+.story-block em{color:rgba(255,255,255,0.55);font-style:italic;font-family:var(--serif);}
+.story-highlight{
+  background:rgba(255,138,80,0.12);
+  border:1px solid rgba(255,138,80,0.2);
+  border-radius:8px;padding:12px 16px;
+  margin:14px 0;font-size:13.5px;
+  color:rgba(255,255,255,0.85);
+}
+.story-highlight code{background:rgba(255,138,80,0.2);color:#ff8a50;border-color:rgba(255,138,80,0.3);}
+
+/* ANALOGY */
+.analogy{
+  background:var(--gold2);border:1px solid rgba(154,104,0,0.2);
+  border-radius:12px;padding:18px 22px;margin-bottom:18px;
+}
+.analogy .alabel{
+  font-size:10px;font-weight:700;letter-spacing:1.2px;
+  color:var(--gold);text-transform:uppercase;margin-bottom:6px;
+}
+.analogy p{font-size:14px;color:var(--ink2);}
+.analogy strong{color:var(--ink);}
+
+/* CODE */
+.code-wrap{background:#16130e;border-radius:12px;overflow:hidden;margin-bottom:16px;border:1px solid rgba(255,255,255,0.06);}
+.code-hdr{
+  background:#201c16;border-bottom:1px solid rgba(255,255,255,0.07);
+  padding:10px 18px;display:flex;align-items:center;justify-content:space-between;
+}
+.code-fn{font-family:var(--mono);font-size:11.5px;color:#8a8070;}
+.code-tag{font-family:var(--mono);font-size:10px;color:#5a5040;background:#2a2418;padding:2px 8px;border-radius:4px;}
+pre{
+  padding:18px 20px;overflow-x:auto;
+  font-family:var(--mono);font-size:12.5px;line-height:1.9;color:#ccc8c0;
+}
+.kw{color:#e87850;} .fn{color:#c0a0e0;} .str{color:#a0d090;}
+.cm{color:#6a6050;font-style:italic;} .num{color:#f0c060;} .fl{color:#80c0e0;}
+
+/* INLINE CODE */
+code{font-family:var(--mono);font-size:12.5px;background:var(--paper3);color:var(--fire);padding:2px 7px;border-radius:5px;border:1px solid var(--border2);}
+
+/* CALLOUT */
+.callout{display:flex;gap:12px;padding:14px 18px;border-radius:10px;margin-bottom:16px;font-size:13.5px;line-height:1.65;}
+.callout.info{background:var(--sky2);border:1px solid rgba(19,88,168,0.18);}
+.callout.warn{background:var(--gold2);border:1px solid rgba(154,104,0,0.18);}
+.callout.tip{background:var(--leaf2);border:1px solid rgba(26,110,58,0.18);}
+.callout.key{background:var(--plum2);border:1px solid rgba(110,42,138,0.18);}
+.callout .ci{font-size:18px;flex-shrink:0;margin-top:1px;}
+
+/* TABLE */
+table{width:100%;border-collapse:collapse;margin-bottom:18px;font-size:13.5px;}
+th{background:var(--paper3);color:var(--ink2);font-weight:700;font-size:10.5px;letter-spacing:0.6px;text-transform:uppercase;padding:10px 14px;text-align:left;border-bottom:2px solid var(--border2);}
+td{padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:top;}
+tr:last-child td{border-bottom:none;}
+
+/* DIAGRAM */
+.diag{background:var(--card);border:1px solid var(--border2);border-radius:14px;padding:28px 24px;margin-bottom:18px;overflow-x:auto;}
+svg.d{display:block;margin:0 auto;}
+
+/* STEP LIST */
+.steps{margin-bottom:16px;}
+.step{display:flex;gap:14px;margin-bottom:14px;}
+.snum{flex-shrink:0;width:28px;height:28px;background:var(--fire);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;font-family:var(--mono);margin-top:1px;}
+.sbody{flex:1;font-size:14px;color:var(--ink2);padding-top:3px;}
+.sbody strong{color:var(--ink);}
+
+/* BADGE */
+.badge{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:5px;font-family:var(--mono);}
+.b-fire{background:rgba(201,74,0,0.1);color:var(--fire);border:1px solid rgba(201,74,0,0.22);}
+.b-sky{background:rgba(19,88,168,0.1);color:var(--sky);border:1px solid rgba(19,88,168,0.22);}
+.b-leaf{background:rgba(26,110,58,0.1);color:var(--leaf);border:1px solid rgba(26,110,58,0.22);}
+.b-gold{background:rgba(154,104,0,0.1);color:var(--gold);border:1px solid rgba(154,104,0,0.22);}
+.b-plum{background:rgba(110,42,138,0.1);color:var(--plum);border:1px solid rgba(110,42,138,0.22);}
+
+/* CMD */
+.cmd{display:inline-flex;align-items:center;gap:8px;background:#16130e;border:1px solid rgba(255,255,255,0.1);border-radius:7px;padding:7px 14px;font-family:var(--mono);font-size:12.5px;color:#ccc8c0;margin-bottom:8px;margin-right:6px;}
+.cmd .px{color:#a0d090;}
+
+/* OUTPUT */
+.out-block{background:#e8f5ee;border:1px solid rgba(26,110,58,0.2);border-radius:8px;padding:14px 18px;font-family:var(--mono);font-size:12px;color:#1a3a20;line-height:1.8;margin-bottom:14px;}
+
+/* CHECKLIST */
+.chk{list-style:none;margin-bottom:16px;}
+.chk li{display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);font-size:14px;color:var(--ink2);}
+.chk li:last-child{border-bottom:none;}
+.chk .ck{color:var(--leaf);font-size:16px;flex-shrink:0;margin-top:1px;}
+
+/* VOCAB TABLE */
+.vocab{width:100%;border-collapse:collapse;font-size:13.5px;margin-bottom:20px;}
+.vocab th{background:var(--ink);color:rgba(255,255,255,0.7);font-size:10.5px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;padding:11px 16px;text-align:left;}
+.vocab td{padding:11px 16px;border-bottom:1px solid var(--border);vertical-align:top;}
+.vocab tr:last-child td{border-bottom:none;}
+.vocab .word{font-family:var(--mono);font-size:12.5px;font-weight:600;color:var(--fire);}
+.vocab .def{color:var(--ink2);}
+.vocab .mem{font-style:italic;font-family:var(--serif);color:var(--ink3);font-size:13px;}
+
+@media(max-width:900px){nav{display:none;}main{margin-left:0;padding:24px 20px;}}
+</style>
+</head>
+<body>
+<div id="prog"></div>
+
+<nav>
+  <div class="nav-brand">
+    <div class="logo">🐳 Docker <span class="accent">Foundations</span></div>
+    <div class="sub">Complete beginner guide · Read first</div>
+  </div>
+  <ul>
+    <div class="nav-sec">The Big Picture</div>
+    <li><a href="#why" class="on"><span class="ico">🤔</span>Why Docker Exists</a></li>
+    <li><a href="#mental"><span class="ico">🧠</span>Mental Model</a></li>
+    <li><a href="#install"><span class="ico">⚙️</span>Install &amp; First Run</a></li>
+    <div class="nav-sec">Core Concepts</div>
+    <li><a href="#images"><span class="ico">📦</span>Images</a></li>
+    <li><a href="#containers"><span class="ico">📫</span>Containers</a></li>
+    <li><a href="#dockerfile"><span class="ico">📝</span>Dockerfile</a></li>
+    <li><a href="#ports"><span class="ico">🚪</span>Port Mapping</a></li>
+    <li><a href="#volumes"><span class="ico">💾</span>Volumes</a></li>
+    <li><a href="#networks"><span class="ico">🌐</span>Networks</a></li>
+    <li><a href="#compose"><span class="ico">🎼</span>Docker Compose</a></li>
+    <li><a href="#registry"><span class="ico">☁️</span>Registries</a></li>
+    <div class="nav-sec">The Story</div>
+    <li><a href="#story"><span class="ico">📖</span>The Full Story</a></li>
+    <div class="nav-sec">Ready Check</div>
+    <li><a href="#vocab"><span class="ico">🗂️</span>Full Vocabulary</a></li>
+    <li><a href="#ready"><span class="ico">✅</span>Readiness Check</a></li>
+  </ul>
+  <div class="nav-foot">Finish this → then open<br>Advanced AI Engineer Notes</div>
+</nav>
+
+<main>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-label">📚 Beginner Foundation — Start Here</div>
+  <h1>Learn Docker from<br><span>Absolute Zero</span></h1>
+  <p>Plain English. Real analogies. A story that teaches every concept. Hands-on commands. No assumed knowledge — just curiosity.</p>
+  <div class="journey">
+    <div class="jstep now">📖 This Note · Foundations</div>
+    <span class="jarr">→</span>
+    <div class="jstep">🚀 Advanced AI Engineer Notes</div>
+  </div>
+</div>
+
+<!-- ========== 01 WHY ========== -->
+<section id="why">
+  <div class="sec-hdr">
+    <div class="sec-num n-fire">01</div>
+    <h2>Why Does Docker Even Exist?</h2>
+  </div>
+  <p class="lead">Before a single command, you need to feel the pain that Docker was built to solve. Otherwise none of it will feel meaningful.</p>
+
+  <div class="diag">
+    <svg class="d" viewBox="0 0 780 200" width="780" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="a1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+          <path d="M2 1L8 5L2 9" fill="none" stroke="#8a8480" stroke-width="1.5" stroke-linecap="round"/>
+        </marker>
+      </defs>
+      <!-- Dev laptop -->
+      <rect x="10" y="30" width="190" height="138" rx="10" fill="#fff" stroke="#d0c8bc" stroke-width="1"/>
+      <text x="105" y="54" text-anchor="middle" font-family="Cabinet Grotesk,sans-serif" font-size="12" font-weight="800" fill="#4a4640">Dev's Laptop</text>
+      <rect x="26" y="63" width="158" height="20" rx="4" fill="#e8f5ee" stroke="rgba(26,110,58,0.3)" stroke-width="0.5"/>
+      <text x="105" y="77" text-anchor="middle" font-family="Fira Code,monospace" font-size="10.5" fill="#1a6e3a">Python 3.11 ✓</text>
+      <rect x="26" y="88" width="158" height="20" rx="4" fill="#e8f5ee" stroke="rgba(26,110,58,0.3)" stroke-width="0.5"/>
+      <text x="105" y="102" text-anchor="middle" font-family="Fira Code,monospace" font-size="10.5" fill="#1a6e3a">Flask 2.2.2 ✓</text>
+      <rect x="26" y="113" width="158" height="20" rx="4" fill="#e8f5ee" stroke="rgba(26,110,58,0.3)" stroke-width="0.5"/>
+      <text x="105" y="127" text-anchor="middle" font-family="Fira Code,monospace" font-size="10.5" fill="#1a6e3a">macOS 14 ✓</text>
+      <text x="105" y="155" text-anchor="middle" font-family="Cabinet Grotesk,sans-serif" font-size="12" fill="#1a6e3a" font-weight="700">Works perfectly!</text>
+
+      <!-- Arrow -->
+      <line x1="201" y1="99" x2="268" y2="99" stroke="#8a8480" stroke-width="1.5" marker-end="url(#a1)" stroke-dasharray="5 3"/>
+      <text x="234" y="91" text-anchor="middle" font-family="Cabinet Grotesk,sans-serif" font-size="10.5" fill="#8a8480">send code</text>
+
+      <!-- Server — broken -->
+      <rect x="270" y="30" width="200" height="138" rx="10" fill="#fdf0ee" stroke="#e0b0a8" stroke-width="1"/>
+      <text x="370" y="54" text-anchor="middle" font-family="Cabinet Grotesk,sans-serif" font-size="12" font-weight="800" fill="#4a4640">Production Server</text>
+      <rect x="286" y="63" width="168" height="20" rx="4" fill="#fdf0ee" stroke="rgba(138,48,32,0.3)" stroke-width="0.5"/>
+      <text x="370" y="77" text-anchor="middle" font-family="Fira Code,monospace" font-size="10" fill="#8a3020">Python 3.7  ← WRONG version!</text>
+      <rect x="286" y="88" width="168" height="20" rx="4" fill="#fdf0ee" stroke="rgba(138,48,32,0.3)" stroke-width="0.5"/>
+      <text x="370" y="102" text-anchor="middle" font-family="Fira Code,monospace" font-size="10" fill="#8a3020">Flask 1.0   ← WRONG version!</text>
+      <rect x="286" y="113" width="168" height="20" rx="4" fill="#fdf0ee" stroke="rgba(138,48,32,0.3)" stroke-width="0.5"/>
+      <text x="370" y="127" text-anchor="middle" font-family="Fira Code,monospace" font-size="10" fill="#8a3020">Ubuntu 20   ← different OS!</text>
+      <text x="370" y="155" text-anchor="middle" font-family="Cabinet Grotesk,sans-serif" font-size="12" fill="#8a3020" font-weight="700">💥 Application CRASHES</text>
+
+      <!-- Big emoji -->
+      <text x="494" y="115" font-family="sans-serif" font-size="44">😤</text>
+
+      <!-- Docker Fix -->
+      <rect x="560" y="20" width="210" height="158" rx="12" fill="#e8f0fc" stroke="rgba(19,88,168,0.3)" stroke-width="1"/>
+      <text x="665" y="46" text-anchor="middle" font-family="Cabinet Grotesk,sans-serif" font-size="12" font-weight="800" fill="#1358a8">Docker Solution</text>
+      <text x="665" y="64" text-anchor="middle" font-family="Cabinet Grotesk,sans-serif" font-size="11" fill="#1358a8">Package EVERYTHING together:</text>
+      <rect x="576" y="72" width="178" height="19" rx="4" fill="rgba(19,88,168,0.12)" stroke="rgba(19,88,168,0.25)" stroke-width="0.5"/>
+      <text x="665" y="85" text-anchor="middle" font-family="Fira Code,monospace" font-size="10.5" fill="#1358a8">Python 3.11 — locked in ✓</text>
+      <rect x="576" y="95" width="178" height="19" rx="4" fill="rgba(19,88,168,0.10)" stroke="rgba(19,88,168,0.2)" stroke-width="0.5"/>
+      <text x="665" y="108" text-anchor="middle" font-family="Fira Code,monospace" font-size="10.5" fill="#1358a8">Flask 2.2.2 — locked in ✓</text>
+      <rect x="576" y="118" width="178" height="19" rx="4" fill="rgba(19,88,168,0.08)" stroke="rgba(19,88,168,0.16)" stroke-width="0.5"/>
+      <text x="665" y="131" text-anchor="middle" font-family="Fira Code,monospace" font-size="10.5" fill="#1358a8">Your code — locked in ✓</text>
+      <text x="665" y="158" text-anchor="middle" font-family="Cabinet Grotesk,sans-serif" font-size="11.5" fill="#1a6e3a" font-weight="700">Runs identically EVERYWHERE ✓</text>
+    </svg>
+  </div>
+
+  <div class="analogy">
+    <div class="alabel">🎂 Analogy that makes it click</div>
+    <p>Imagine you bake a perfect cake at home. You write down the recipe and send it to a friend. But their oven is different, their flour brand is different, and they're at a different altitude — the cake comes out wrong. <strong>Docker is like shipping the actual baked cake in a sealed, perfect box</strong> instead of just the recipe. Your friend opens the box and eats the exact same cake. No re-baking needed, no variables.</p>
+  </div>
+
+  <div class="grid2">
+    <div class="card stripe-leaf">
+      <h3 style="color:var(--leaf);margin-top:0">✅ Problems Docker solves</h3>
+      <p>• "Works on my machine" — gone forever<br>• Conflicting Python/library versions<br>• Hours of manual server setup<br>• Different dev vs production environments<br>• Painful onboarding for new teammates</p>
+    </div>
+    <div class="card stripe-sky">
+      <h3 style="color:var(--sky);margin-top:0">🚫 What Docker is NOT</h3>
+      <p>• Not a virtual machine (much lighter)<br>• Not a cloud platform (it works everywhere)<br>• Not only for servers (great for local dev too)<br>• Not only for big companies<br>• Not complicated once the mental model clicks</p>
+    </div>
+  </div>
+</section>
+
+<!-- ========== 02 MENTAL MODEL ========== -->
+<section id="mental">
+  <div class="sec-hdr">
+    <div class="sec-num n-sky">02</div>
+    <h2>The Mental Model — 3 Things to Understand</h2>
+  </div>
+  <p class="lead">Everything in Docker flows from just three concepts. Get these right and every command makes sense automatically.</p>
+
+  <div class="diag">
+    <svg class="d" viewBox="0 0 780 260" width="780" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="a2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+          <path d="M2 1L8 5L2 9" fill="none" stroke="#c94a00" stroke-width="2" stroke-linecap="round"/>
+        </marker>
+      </defs>
+
+      <!-- Box 1: Dockerfile -->
+      <rect x="10" y="40" width="188" height="192" rx="12" fill="#fff" stroke="#d0c8bc" stroke-width="1"/>
+      <rect x="10" y="40" width="188" height="38" rx="12" fill="#f1ede5" stroke="none"/>
+      <rect x="10" y="66" width="188" height="12" fill="#f1ede5"/>
+      <text x="104" y="65" text-anchor="middle" font-family="Cabinet Grotesk,sans-serif" font-size="14" font-weight="900" fill="#0f0e0c">📝 Dockerfile</text>
+      <text x="104" y="100" text-anchor="middle" font-family="Cabinet Grotesk,sans-serif" font-size="11.5" fill="#4a4640">Plain text file.</text>
+      <text x="104" y="116" text-anchor="middle" font-family="Cabinet Grotesk,sans-serif" font-size="11.5" fill="#4a4640">Your recipe / blueprint.</text>
+      <text x="104" y="140" text-anchor="middle" font-family="Fira Code,monospace" font-size="9.5" fill="#8a8480">FROM python:3.11</text>
+      <text x="104" y="157" text-anchor="middle" font-family="Fira Code,monospace" font-size="9.5" fill="#8a8480">COPY app.py .</text>
+      <text x="104" y="174" text-anchor="middle" font-family="Fira Code,monospace" font-size="9.5" fill="#8a8480">RUN pip install...</text>
+      <text x="104" y="191" text-anchor="middle" font-family="Fira Code,monospace" font-size="9.5" fill="#8a8480">CMD ["python","app.py"]</text>
+      <text x="104" y="218" text-anchor="middle" font-family="Cabinet Grotesk,sans-serif" font-size="10.5" fill="#8a8480">You write this once</text>
+
+      <!-- Arrow 1 -->
+      <line x1="200" y1="136" x2="256" y2="136" stroke="#c94a00" stroke-width="2" marker-end="url(#a2)"/>
+      <rect x="200" y="114" width="56" height="20" rx="5" fill="#fff0e8" stroke="rgba(201,74,0,0.2)" stroke-width="0.5"/>
+      <text x="228" y="127" text-anchor="middle" font-family="Cabinet Grotesk,sans-serif" font-size="9.5" font-weight="700" fill="#c94a00">docker build</text>
+
+      <!-- Box 2: Image -->
+      <rect x="258" y="40" width="200" height="192" rx="12" fill="#fff" stroke="#d0c8bc" stroke-width="1"/>
+      <rect x="258" y="40" width="200" height="38" rx="12" fill="#e8f5ee" stroke="none"/>
+      <rect x="258" y="66" width="200" height="12" fill="#e8f5ee"/>
+      <text x="358" y="65" text-anchor="middle" font-family="Cabinet Grotesk,sans-serif" font-size="14" font-weight="900" fill="#0f0e0c">📦 Image</text>
+      <rect x="274" y="88" width="168" height="19" rx="3" fill="rgba(26,110,58,0.22)" stroke="rgba(26,110,58,0.4)" stroke-width="0.5"/>
+      <text x="358" y="101" text-anchor="middle" font-family="Fira Code,monospace" font-size="10" fill="#1a6e3a">layer: python:3.11-slim</text>
+      <rect x="274" y="111" width="168" height="19" rx="3" fill="rgba(26,110,58,0.16)" stroke="rgba(26,110,58,0.32)" stroke-width="0.5"/>
+      <text x="358" y="124" text-anchor="middle" font-family="Fira Code,monospace" font-size="10" fill="#1a6e3a">layer: pip packages</text>
+      <rect x="274" y="134" width="168" height="19" rx="3" fill="rgba(26,110,58,0.10)" stroke="rgba(26,110,58,0.22)" stroke-width="0.5"/>
+      <text x="358" y="147" text-anchor="middle" font-family="Fira Code,monospace" font-size="10" fill="#1a6e3a">layer: your app code</text>
+      <text x="358" y="178" text-anchor="middle" font-family="Cabinet Grotesk,sans-serif" font-size="11.5" fill="#4a4640">Read-only. Never changes.</text>
+      <text x="358" y="195" text-anchor="middle" font-family="Cabinet Grotesk,sans-serif" font-size="11.5" fill="#4a4640">A frozen snapshot of</text>
+      <text x="358" y="212" text-anchor="middle" font-family="Cabinet Grotesk,sans-serif" font-size="11.5" fill="#4a4640">your whole environment.</text>
+
+      <!-- Arrow 2 -->
+      <line x1="460" y1="136" x2="516" y2="136" stroke="#c94a00" stroke-width="2" marker-end="url(#a2)"/>
+      <rect x="460" y="114" width="56" height="20" rx="5" fill="#fff0e8" stroke="rgba(201,74,0,0.2)" stroke-width="0.5"/>
+      <text x="488" y="127" text-anchor="middle" font-family="Cabinet Grotesk,sans-serif" font-size="9.5" font-weight="700" fill="#c94a00">docker run</text>
+
+      <!-- Box 3: Container -->
+      <rect x="518" y="40" width="252" height="192" rx="12" fill="#fff" stroke="#d0c8bc" stroke-width="1"/>
+      <rect x="518" y="40" width="252" height="38" rx="12" fill="#e8f0fc" stroke="none"/>
+      <rect x="518" y="66" width="252" height="12" fill="#e8f0fc"/>
+      <text x="644" y="65" text-anchor="middle" font-family="Cabinet Grotesk,sans-serif" font-size="14" font-weight="900" fill="#0f0e0c">📫 Container</text>
+      <circle cx="545" cy="96" r="5" fill="#1a6e3a"/>
+      <text x="558" y="100" font-family="Cabinet Grotesk,sans-serif" font-size="11" fill="#1a6e3a" font-weight="700">RUNNING</text>
+      <rect x="532" y="108" width="224" height="19" rx="4" fill="rgba(19,88,168,0.12)" stroke="rgba(19,88,168,0.25)" stroke-width="0.5"/>
+      <text x="644" y="121" text-anchor="middle" font-family="Fira Code,monospace" font-size="10" fill="#1358a8">image layers (read-only)</text>
+      <rect x="532" y="131" width="224" height="19" rx="4" fill="rgba(201,74,0,0.1)" stroke="rgba(201,74,0,0.25)" stroke-width="0.5"/>
+      <text x="644" y="144" text-anchor="middle" font-family="Fira Code,monospace" font-size="10" fill="#c94a00">writable layer (new/changed files)</text>
+      <text x="644" y="172" text-anchor="middle" font-family="Cabinet Grotesk,sans-serif" font-size="11.5" fill="#4a4640">Live, isolated running process.</text>
+      <text x="644" y="188" text-anchor="middle" font-family="Cabinet Grotesk,sans-serif" font-size="11.5" fill="#4a4640">Own filesystem + network.</text>
+      <text x="644" y="205" text-anchor="middle" font-family="Cabinet Grotesk,sans-serif" font-size="11.5" fill="#4a4640">Can be started and stopped.</text>
+
+      <!-- Bottom labels -->
+      <text x="104" y="250" text-anchor="middle" font-family="Cabinet Grotesk,sans-serif" font-size="12" font-weight="700" fill="#8a8480">THE RECIPE</text>
+      <text x="358" y="250" text-anchor="middle" font-family="Cabinet Grotesk,sans-serif" font-size="12" font-weight="700" fill="#8a8480">THE SEALED BOX</text>
+      <text x="644" y="250" text-anchor="middle" font-family="Cabinet Grotesk,sans-serif" font-size="12" font-weight="700" fill="#8a8480">THE BOX, OPEN AND RUNNING</text>
+    </svg>
+  </div>
+
+  <div class="analogy">
+    <div class="alabel">🎬 Movie analogy — the one that sticks</div>
+    <p>The <strong>Dockerfile</strong> is the movie script (instructions for what should happen). The <strong>Image</strong> is the finished movie on a Blu-ray disc — complete, sealed, can't be edited, can be copied a thousand times. The <strong>Container</strong> is the movie playing on your TV right now — that's the actual live running process. You can play the same Blu-ray on many TVs simultaneously — that's running many containers from one image.</p>
+  </div>
+
+  <div class="grid2">
+    <div class="card stripe-leaf">
+      <h3 style="color:var(--leaf);margin-top:0">📦 Image — Static</h3>
+      <ul style="color:var(--ink2);font-size:13.5px;padding-left:18px;line-height:2.1;">
+        <li>Read-only, never changes once built</li>
+        <li>Stored on disk like a file</li>
+        <li>Can be shared and copied anywhere</li>
+        <li>Like a class definition in Python</li>
+        <li>Exists with no container running from it</li>
+      </ul>
+    </div>
+    <div class="card stripe-sky">
+      <h3 style="color:var(--sky);margin-top:0">📫 Container — Live</h3>
+      <ul style="color:var(--ink2);font-size:13.5px;padding-left:18px;line-height:2.1;">
+        <li>A running, alive process</li>
+        <li>Has its own isolated filesystem</li>
+        <li>Has its own isolated network</li>
+        <li>Like an object instance in Python</li>
+        <li>Can be started, stopped, and deleted</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ========== 03 INSTALL ========== -->
+<section id="install">
+  <div class="sec-hdr">
+    <div class="sec-num n-leaf">03</div>
+    <h2>Install Docker &amp; Your First Command</h2>
+  </div>
+
+  <table>
+    <tr><th>Your OS</th><th>What to install</th><th>Where</th></tr>
+    <tr><td><strong>Windows / Mac</strong></td><td>Docker Desktop — GUI + everything pre-packaged</td><td>docs.docker.com/get-docker</td></tr>
+    <tr><td><strong>Ubuntu / Debian</strong></td><td>Docker Engine + docker-compose-plugin</td><td>docs.docker.com/engine/install/ubuntu</td></tr>
+  </table>
+
+  <div class="callout tip">
+    <span class="ci">✅</span>
+    <div><strong>Verify install worked:</strong> Open terminal and type <code>docker --version</code>. You should see something like <code>Docker version 26.0.0</code>. "Command not found" means installation didn't complete.</div>
+  </div>
+
+  <h3>Your very first Docker command</h3>
+  <div class="code-wrap">
+    <div class="code-hdr"><span class="code-fn">Terminal</span><span class="code-tag">bash</span></div>
+<pre><span class="cm"># This downloads a tiny test image and runs it</span>
+docker run hello-world</pre>
+  </div>
+  <div class="out-block">
+Hello from Docker!
+This message shows that your installation appears to be working correctly.
+
+To generate this message, Docker took the following steps:
+ 1. The Docker client contacted the Docker daemon.
+ 2. The Docker daemon pulled the "hello-world" image from Docker Hub.
+ 3. The Docker daemon created a new container from that image which runs a
+    small program that produces this output, then exits.
+  </div>
+
+  <div class="steps">
+    <div class="step"><div class="snum">1</div><div class="sbody"><strong>You typed</strong> <code>docker run hello-world</code> — told Docker to run a container from image named "hello-world"</div></div>
+    <div class="step"><div class="snum">2</div><div class="sbody"><strong>Docker checked locally</strong> — looked if "hello-world" image exists on your machine. It didn't.</div></div>
+    <div class="step"><div class="snum">3</div><div class="sbody"><strong>Auto-pulled from Docker Hub</strong> — Docker Hub is the internet library of public images, like npm/PyPI but for whole environments</div></div>
+    <div class="step"><div class="snum">4</div><div class="sbody"><strong>Container ran &amp; exited</strong> — a container started from that image, printed the message, and automatically exited. All in 2 seconds.</div></div>
+  </div>
+</section>
+
+<!-- ========== 04 IMAGES ========== -->
+<section id="images">
+  <div class="sec-hdr">
+    <div class="sec-num n-gold">04</div>
+    <h2>Images — The Sealed Box</h2>
+  </div>
+
+  <p class="lead">An image is a complete, portable package: operating system slice + your language runtime + your libraries + your code — all frozen together, ready to run anywhere.</p>
+
+  <h3>Where do images come from?</h3>
+  <div class="grid3">
+    <div class="card">
+      <h3 style="margin-top:0">1. Docker Hub</h3>
+      <p>Official public registry. Pre-built images for everything: <code>python:3.11</code>, <code>postgres:16</code>, <code>ubuntu:22.04</code>. You just <code>docker pull</code> them — instantly.</p>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0">2. Build yourself</h3>
+      <p>Write a <code>Dockerfile</code>, run <code>docker build</code>. Creates a custom image with your app code and dependencies baked in.</p>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0">3. Private Registry</h3>
+      <p>Your company's own hub (AWS ECR, Google GCR, GitHub GHCR). Same idea but private — only your team can access.</p>
+    </div>
+  </div>
+
+  <h3>Image commands</h3>
+  <div class="code-wrap">
+    <div class="code-hdr"><span class="code-fn">Image commands</span><span class="code-tag">bash</span></div>
+<pre><span class="cm"># Download an image without running it</span>
+docker pull python:<span class="num">3.11-slim</span>
+
+<span class="cm"># See all images stored on your machine</span>
+docker images
+
+<span class="cm"># Remove an image you no longer need</span>
+docker rmi python:<span class="num">3.11-slim</span>
+
+<span class="cm"># Check an image's history (layers it was built from)</span>
+docker image history python:<span class="num">3.11-slim</span></pre>
+  </div>
+
+  <div class="callout info">
+    <span class="ci">🏷️</span>
+    <div><strong>What is a TAG?</strong> Tags are version labels. In <code>python:3.11-slim</code> — "python" is the repository name, "3.11-slim" is the tag. <code>latest</code> is the default tag if you don't specify. Always pin to a specific tag in production — <code>latest</code> can change unexpectedly and break your code.</div>
+  </div>
+
+  <h3>How layers work (simply explained)</h3>
+  <p style="color:var(--ink2);margin-bottom:14px;font-size:14px;">Think of an image as a stack of transparent sheets. Each Dockerfile instruction adds one sheet. When you change your app code and rebuild, Docker reuses all the unchanged layers from cache — only rebuilds from the changed layer down. This turns 3-minute rebuilds into 3-second rebuilds.</p>
+
+  <div class="diag">
+    <svg class="d" viewBox="0 0 600 215" width="600" xmlns="http://www.w3.org/2000/svg">
+      <text x="300" y="22" text-anchor="middle" font-family="Cabinet Grotesk,sans-serif" font-size="12" font-weight="700" fill="#4a4640">Image = stacked layers, built bottom → top</text>
+      <rect x="50" y="162" width="400" height="30" rx="4" fill="rgba(19,88,168,0.22)" stroke="rgba(19,88,168,0.5)" stroke-width="1"/>
+      <text x="250" y="182" text-anchor="middle" font-family="Fira Code,monospace" font-size="11" fill="#1358a8">FROM python:3.11-slim  (base OS + python)</text>
+      <text x="465" y="182" font-family="Cabinet Grotesk,sans-serif" font-size="10" fill="#1358a8">← cached ✓</text>
+
+      <rect x="50" y="128" width="400" height="30" rx="4" fill="rgba(19,88,168,0.16)" stroke="rgba(19,88,168,0.4)" stroke-width="1"/>
+      <text x="250" y="148" text-anchor="middle" font-family="Fira Code,monospace" font-size="11" fill="#1358a8">RUN pip install -r requirements.txt</text>
+      <text x="465" y="148" font-family="Cabinet Grotesk,sans-serif" font-size="10" fill="#1358a8">← cached ✓</text>
+
+      <rect x="50" y="94" width="400" height="30" rx="4" fill="rgba(26,110,58,0.18)" stroke="rgba(26,110,58,0.4)" stroke-width="1"/>
+      <text x="250" y="114" text-anchor="middle" font-family="Fira Code,monospace" font-size="11" fill="#1a6e3a">COPY app.py .   (your code — changes often)</text>
+      <text x="465" y="114" font-family="Cabinet Grotesk,sans-serif" font-size="10" fill="#c94a00">← rebuilt only if changed</text>
+
+      <rect x="50" y="60" width="400" height="30" rx="4" fill="rgba(201,74,0,0.14)" stroke="rgba(201,74,0,0.4)" stroke-width="1"/>
+      <text x="250" y="80" text-anchor="middle" font-family="Fira Code,monospace" font-size="11" fill="#c94a00">CMD ["python", "app.py"]</text>
+      <text x="465" y="80" font-family="Cabinet Grotesk,sans-serif" font-size="10" fill="#c94a00">← rebuilt</text>
+
+      <text x="250" y="208" text-anchor="middle" font-family="Cabinet Grotesk,sans-serif" font-size="11" fill="#8a8480">Changing app.py only rebuilds last 2 layers — pip install stays cached = fast!</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ========== 05 CONTAINERS ========== -->
+<section id="containers">
+  <div class="sec-hdr">
+    <div class="sec-num n-plum">05</div>
+    <h2>Containers — The Running Box</h2>
+  </div>
+
+  <p class="lead">A container is a live, isolated process. Think of it as a lightweight mini-computer running inside your computer — completely self-contained.</p>
+
+  <div class="grid2">
+    <div class="card stripe-fire">
+      <h3 style="color:var(--fire);margin-top:0">🗂 Own filesystem</h3>
+      <p>Files inside the container are completely separate from your machine's files. The container can't see your Documents folder. Your machine can't see container's <code>/app</code> folder — unless you explicitly connect them with a volume.</p>
+    </div>
+    <div class="card stripe-sky">
+      <h3 style="color:var(--sky);margin-top:0">🌐 Own network</h3>
+      <p>The container gets its own private IP. If your app runs on port 5000 inside the container, you can NOT reach it from your browser unless you explicitly <strong>map the port</strong> using <code>-p</code>. Isolation by default.</p>
+    </div>
+    <div class="card stripe-leaf">
+      <h3 style="color:var(--leaf);margin-top:0">⚡ Extremely lightweight</h3>
+      <p>Not a full OS. Shares the host's Linux kernel. Starts in under 1 second. Uses 10–50 MB RAM for a simple app. Compare: a virtual machine needs 1–2 GB RAM and 30 seconds just to boot.</p>
+    </div>
+    <div class="card stripe-gold">
+      <h3 style="color:var(--gold);margin-top:0">⚠️ Data warning</h3>
+      <p>By default, when a container is deleted, ALL data written inside it is gone forever — files, database rows, everything. To keep data, you need <strong>volumes</strong> (covered next). This is one of the biggest beginner surprises.</p>
+    </div>
+  </div>
+
+  <h3>Core container commands</h3>
+  <div class="code-wrap">
+    <div class="code-hdr"><span class="code-fn">Container commands</span><span class="code-tag">bash</span></div>
+<pre><span class="cm"># List running containers</span>
+docker ps
+
+<span class="cm"># List ALL containers including stopped ones</span>
+docker ps <span class="fl">-a</span>
+
+<span class="cm"># Stop a running container (graceful shutdown)</span>
+docker stop &lt;container-id-or-name&gt;
+
+<span class="cm"># Start a stopped container again</span>
+docker start &lt;name&gt;
+
+<span class="cm"># Delete a stopped container</span>
+docker rm &lt;name&gt;
+
+<span class="cm"># Shell inside a running container (for debugging)</span>
+docker exec <span class="fl">-it</span> &lt;name&gt; bash
+
+<span class="cm"># See live output / logs from a container</span>
+docker logs <span class="fl">-f</span> &lt;name&gt;</pre>
+  </div>
+</section>
+
+<!-- ========== 06 DOCKERFILE ========== -->
+<section id="dockerfile">
+  <div class="sec-hdr">
+    <div class="sec-num n-teal">06</div>
+    <h2>The Dockerfile — Your Recipe</h2>
+  </div>
+
+  <p class="lead">A Dockerfile is just a plain text file (no extension) with step-by-step instructions. Each line is one building block of your image.</p>
+
+  <h3>The most common Dockerfile for Python</h3>
+  <div class="code-wrap">
+    <div class="code-hdr"><span class="code-fn">Dockerfile</span><span class="code-tag">dockerfile</span></div>
+<pre><span class="cm"># 1. Start from a base image — Python already installed inside</span>
+<span class="kw">FROM</span> python:<span class="num">3.11-slim</span>
+
+<span class="cm"># 2. Set working directory inside container (create if not exist)</span>
+<span class="kw">WORKDIR</span> /app
+
+<span class="cm"># 3. Copy ONLY requirements first (cache trick — see below!)</span>
+<span class="kw">COPY</span> requirements.txt .
+
+<span class="cm"># 4. Install dependencies — this layer gets cached</span>
+<span class="kw">RUN</span> pip install -r requirements.txt
+
+<span class="cm"># 5. Copy rest of your code (changes most often — so it goes last)</span>
+<span class="kw">COPY</span> . .
+
+<span class="cm"># 6. What command runs when container starts</span>
+<span class="kw">CMD</span> [<span class="str">"python"</span>, <span class="str">"app.py"</span>]</pre>
+  </div>
+
+  <table>
+    <tr><th>Instruction</th><th>Plain English Meaning</th></tr>
+    <tr><td><code>FROM python:3.11-slim</code></td><td>"Start from an image that already has Python 3.11 installed. Use the slim (smaller) variant."</td></tr>
+    <tr><td><code>WORKDIR /app</code></td><td>"From now on, all commands run inside the <code>/app</code> folder inside the container. Create it if it doesn't exist."</td></tr>
+    <tr><td><code>COPY requirements.txt .</code></td><td>"Copy this file from my machine into the container's current folder (<code>/app</code>)."</td></tr>
+    <tr><td><code>RUN pip install -r requirements.txt</code></td><td>"Execute this shell command while building the image. Install Python packages."</td></tr>
+    <tr><td><code>COPY . .</code></td><td>"Copy everything in my current folder into the container's <code>/app</code> folder."</td></tr>
+    <tr><td><code>CMD ["python", "app.py"]</code></td><td>"When someone starts a container from this image, run this command automatically."</td></tr>
+  </table>
+
+  <h3>Build &amp; run it</h3>
+  <div class="code-wrap">
+    <div class="code-hdr"><span class="code-fn">Build image, then run container</span><span class="code-tag">bash</span></div>
+<pre><span class="cm"># Build: reads Dockerfile, creates image named my-app with tag 1.0</span>
+<span class="cm"># The "." at the end = "use current folder as build context"</span>
+docker build <span class="fl">-t</span> my-app:<span class="num">1.0</span> .
+
+<span class="cm"># Verify the image was created</span>
+docker images
+
+<span class="cm"># Run it as a container</span>
+docker run <span class="fl">-d</span> <span class="fl">-p</span> <span class="num">5000:5000</span> <span class="fl">--name</span> my-flask my-app:<span class="num">1.0</span></pre>
+  </div>
+</section>
+
+<!-- ========== 07 PORTS ========== -->
+<section id="ports">
+  <div class="sec-hdr">
+    <div class="sec-num n-rust">07</div>
+    <h2>Port Mapping — Opening the Door</h2>
+  </div>
+
+  <p class="lead">This is the most confusing topic for beginners. Understand this and it never trips you up again.</p>
+
+  <div class="analogy">
+    <div class="alabel">🚪 Analogy — apartment building</div>
+    <p>Imagine the container is an <strong>apartment on the 5th floor</strong>. Port 5000 inside the container is the apartment's <strong>internal room number</strong>. From outside the building (your browser), you can't just knock on room 5000 — you need the building's main entrance. <strong>Port mapping</strong> is like telling the doorman: "Anyone who comes to the building door asking for port 8080 — take them to apartment 5000 on the 5th floor."</p>
+  </div>
+
+  <div class="diag">
+    <svg class="d" viewBox="0 0 700 140" width="700" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="pa" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+          <path d="M2 1L8 5L2 9" fill="none" stroke="#1358a8" stroke-width="2" stroke-linecap="round"/>
+        </marker>
+      </defs>
+
+      <rect x="20" y="30" width="140" height="76" rx="8" fill="#fff" stroke="#d0c8bc" stroke-width="1"/>
+      <text x="90" y="55" text-anchor="middle" font-family="Cabinet Grotesk,sans-serif" font-size="11" font-weight="700" fill="#4a4640">Your Browser</text>
+      <text x="90" y="73" text-anchor="middle" font-family="Fira Code,monospace" font-size="11" fill="#c94a00">localhost:8080</text>
+      <text x="90" y="90" text-anchor="middle" font-family="Cabinet Grotesk,sans-serif" font-size="10" fill="#8a8480">you visit this URL</text>
+
+      <line x1="161" y1="68" x2="220" y2="68" stroke="#1358a8" stroke-width="2" marker-end="url(#pa)"/>
+
+      <rect x="222" y="20" width="160" height="96" rx="8" fill="#e8f0fc" stroke="rgba(19,88,168,0.3)" stroke-width="1"/>
+      <text x="302" y="44" text-anchor="middle" font-family="Cabinet Grotesk,sans-serif" font-size="11" font-weight="700" fill="#1358a8">Docker Port Mapping</text>
+      <text x="302" y="62" text-anchor="middle" font-family="Fira Code,monospace" font-size="13" fill="#c94a00" font-weight="600">-p 8080:5000</text>
+      <text x="302" y="80" text-anchor="middle" font-family="Cabinet Grotesk,sans-serif" font-size="10" fill="#1358a8">host port : container port</text>
+      <text x="302" y="98" text-anchor="middle" font-family="Cabinet Grotesk,sans-serif" font-size="10" fill="#1358a8">"forward 8080 → 5000"</text>
+
+      <line x1="383" y1="68" x2="440" y2="68" stroke="#1358a8" stroke-width="2" marker-end="url(#pa)"/>
+
+      <rect x="442" y="20" width="238" height="96" rx="8" fill="#e8f5ee" stroke="rgba(26,110,58,0.3)" stroke-width="1"/>
+      <text x="561" y="44" text-anchor="middle" font-family="Cabinet Grotesk,sans-serif" font-size="11" font-weight="700" fill="#1a6e3a">Container (isolated)</text>
+      <text x="561" y="63" text-anchor="middle" font-family="Cabinet Grotesk,sans-serif" font-size="11" fill="#1a6e3a">App running on port</text>
+      <text x="561" y="79" text-anchor="middle" font-family="Fira Code,monospace" font-size="14" fill="#c94a00" font-weight="600">5000</text>
+      <text x="561" y="100" text-anchor="middle" font-family="Cabinet Grotesk,sans-serif" font-size="10" fill="#1a6e3a">internally (not visible outside)</text>
+
+      <text x="350" y="130" text-anchor="middle" font-family="Cabinet Grotesk,sans-serif" font-size="11" fill="#8a8480">Left number = YOUR machine's port &nbsp;·&nbsp; Right number = CONTAINER's port</text>
+    </svg>
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-hdr"><span class="code-fn">Port mapping examples</span><span class="code-tag">bash</span></div>
+<pre><span class="cm"># Map host 5000 → container 5000 (same port)</span>
+docker run <span class="fl">-p</span> <span class="num">5000</span>:<span class="num">5000</span> my-app:<span class="num">1.0</span>
+
+<span class="cm"># Map host 8080 → container 5000 (different ports)</span>
+docker run <span class="fl">-p</span> <span class="num">8080</span>:<span class="num">5000</span> my-app:<span class="num">1.0</span>
+<span class="cm"># Now visit localhost:8080 in browser → hits container port 5000</span>
+
+<span class="cm"># Run in detached mode (background) + give it a name</span>
+docker run <span class="fl">-d</span> <span class="fl">-p</span> <span class="num">5000</span>:<span class="num">5000</span> <span class="fl">--name</span> my-server my-app:<span class="num">1.0</span></pre>
+  </div>
+
+  <div class="callout warn">
+    <span class="ci">⚠️</span>
+    <div><strong>No port mapping = completely unreachable from outside.</strong> If you forget <code>-p</code>, your app runs fine inside the container but you cannot reach it. The browser will say "connection refused". Just add the <code>-p</code> flag.</div>
+  </div>
+</section>
+
+<!-- ========== 08 VOLUMES ========== -->
+<section id="volumes">
+  <div class="sec-hdr">
+    <div class="sec-num n-gold">08</div>
+    <h2>Volumes — Keeping Your Data</h2>
+  </div>
+
+  <p class="lead">By default containers are ephemeral — delete the container, all data inside it vanishes. Volumes solve this.</p>
+
+  <div class="analogy">
+    <div class="alabel">🏨 Hotel room analogy</div>
+    <p>A container without volumes is like a hotel room — everything resets when you check out. A <strong>bind mount</strong> is like bringing your own laptop to the hotel — your files stay on your laptop no matter what. A <strong>named volume</strong> is like renting a storage unit near the hotel — you deposit things, they stay there safely even after you check out, and you can pick them up when you return.</p>
+  </div>
+
+  <div class="grid2">
+    <div class="card stripe-fire">
+      <h3 style="color:var(--fire);margin-top:0">Bind Mount — for development</h3>
+      <p>Links a specific folder on your actual computer into the container. When you edit a file on your machine, the change is <em>instantly</em> visible inside the container. Perfect for live-reload dev workflows.</p>
+      <div class="code-wrap" style="margin-top:10px;margin-bottom:0;">
+        <div class="code-hdr"><span class="code-fn">Syntax</span></div>
+<pre style="font-size:11.5px;padding:12px">docker run <span class="fl">-v</span> <span class="str">$(pwd)</span>:/app my-app:<span class="num">1.0</span>
+<span class="cm"># $(pwd) = your current folder</span>
+<span class="cm"># /app = folder inside container</span></pre>
+      </div>
+    </div>
+    <div class="card stripe-leaf">
+      <h3 style="color:var(--leaf);margin-top:0">Named Volume — for persistence</h3>
+      <p>Docker manages the storage for you. Survives container deletion. Perfect for databases, model weights, anything that must persist across container restarts.</p>
+      <div class="code-wrap" style="margin-top:10px;margin-bottom:0;">
+        <div class="code-hdr"><span class="code-fn">Syntax</span></div>
+<pre style="font-size:11.5px;padding:12px">docker volume create my-data
+docker run <span class="fl">-v</span> <span class="str">my-data</span>:/app/data my-app:<span class="num">1.0</span>
+docker volume ls      <span class="cm"># list volumes</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <table>
+    <tr><th>Type</th><th>Syntax</th><th>Use case</th><th>Survives container rm?</th></tr>
+    <tr><td><span class="badge b-fire">Bind Mount</span></td><td><code>-v /your/path:/ctr/path</code></td><td>Dev live-reload, local datasets</td><td>Yes — it's your own files</td></tr>
+    <tr><td><span class="badge b-leaf">Named Volume</span></td><td><code>-v vol-name:/ctr/path</code></td><td>DB data, model weights</td><td>Yes — Docker keeps it</td></tr>
+    <tr><td><span class="badge b-gold">tmpfs</span></td><td><code>--tmpfs /tmp</code></td><td>Secrets, temp scratch</td><td>No — RAM only, gone on exit</td></tr>
+  </table>
+</section>
+
+<!-- ========== 09 NETWORKS ========== -->
+<section id="networks">
+  <div class="sec-hdr">
+    <div class="sec-num n-teal">09</div>
+    <h2>Networks — Containers Talking to Each Other</h2>
+  </div>
+
+  <p class="lead">By default, containers are islands — totally isolated. When you need two containers to communicate (like an app and its database), you need a Docker network.</p>
+
+  <div class="analogy">
+    <div class="alabel">📡 Office Wi-Fi analogy</div>
+    <p>A Docker network is like a <strong>private office Wi-Fi</strong>. Any device (container) you connect to that Wi-Fi can find and talk to any other connected device — by name, not IP address. Devices on different Wi-Fi networks can't reach each other. The key magic: <strong>Docker DNS automatically resolves container names to their internal IPs.</strong> So if your database container is named "my-db", your app container can connect to <code>http://my-db:5432</code> without ever knowing the actual IP.</p>
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-hdr"><span class="code-fn">Connect two containers on same network</span><span class="code-tag">bash</span></div>
+<pre><span class="cm"># Step 1: Create a shared network</span>
+docker network create my-net
+
+<span class="cm"># Step 2: Run the database on that network, give it a name</span>
+docker run <span class="fl">-d</span> \
+  <span class="fl">--name</span> my-db \
+  <span class="fl">--network</span> my-net \
+  <span class="fl">-e</span> POSTGRES_PASSWORD=secret \
+  postgres:<span class="num">16</span>
+
+<span class="cm"># Step 3: Run your app on the same network</span>
+docker run <span class="fl">-d</span> \
+  <span class="fl">--name</span> my-app \
+  <span class="fl">--network</span> my-net \
+  <span class="fl">-p</span> <span class="num">8000:8000</span> \
+  my-flask-app:<span class="num">1.0</span>
+
+<span class="cm"># Inside my-app, connect to database using name as hostname:</span>
+<span class="cm"># "postgresql://user:secret@my-db:5432/mydb"</span>
+<span class="cm"># Docker DNS resolves "my-db" to its IP automatically ✓</span></pre>
+  </div>
+
+  <div class="callout key">
+    <span class="ci">🔑</span>
+    <div><strong>The golden rule:</strong> Never hardcode container IPs like <code>172.19.0.3</code> in your code. Container IPs can change on restart. Always use the container's <strong>name</strong> as the hostname — it's stable and Docker resolves it automatically.</div>
+  </div>
+</section>
+
+<!-- ========== 10 COMPOSE ========== -->
+<section id="compose">
+  <div class="sec-hdr">
+    <div class="sec-num n-sky">10</div>
+    <h2>Docker Compose — One File, Everything</h2>
+  </div>
+
+  <p class="lead">Once you have 2+ containers, managing them with individual <code>docker run</code> commands gets messy fast. Docker Compose is the solution.</p>
+
+  <div class="grid2" style="margin-bottom:8px;">
+    <div class="card stripe-rust" style="border-left-color:var(--rust);background:var(--rust2);">
+      <h3 style="color:var(--rust);margin-top:0">😩 Without Compose — 4 commands to memorize</h3>
+      <div class="code-wrap" style="margin-bottom:0;">
+<pre style="font-size:11px;padding:12px">docker network create my-net
+docker run -d --name db \
+  --network my-net \
+  -e POSTGRES_PASSWORD=s3cr3t \
+  postgres:16
+docker run -d --name redis \
+  --network my-net redis:7
+docker run -d --name api \
+  --network my-net -p 8000:8000 \
+  my-api:1.0</pre>
+      </div>
+    </div>
+    <div class="card stripe-leaf">
+      <h3 style="color:var(--leaf);margin-top:0">😊 With Compose — 1 command forever</h3>
+      <div class="code-wrap" style="margin-bottom:0;">
+<pre style="font-size:11px;padding:12px"><span class="cm"># docker-compose.yml</span>
+<span class="kw">services</span>:
+  <span class="kw">db</span>:
+    <span class="kw">image</span>: postgres:<span class="num">16</span>
+    <span class="kw">environment</span>:
+      POSTGRES_PASSWORD: s3cr3t
+  <span class="kw">redis</span>:
+    <span class="kw">image</span>: redis:<span class="num">7</span>
+  <span class="kw">api</span>:
+    <span class="kw">build</span>: .
+    <span class="kw">ports</span>: [<span class="str">"8000:8000"</span>]
+
+<span class="cm"># Then just:</span>
+docker compose up -d</pre>
+      </div>
+    </div>
+  </div>
+
+  <h3>The 5 Compose commands you need</h3>
+  <table>
+    <tr><th>Command</th><th>What it does</th></tr>
+    <tr><td><code>docker compose up -d</code></td><td>Build if needed, start all services in background. Creates network automatically.</td></tr>
+    <tr><td><code>docker compose up --build</code></td><td>Force-rebuild images before starting. Use after code changes.</td></tr>
+    <tr><td><code>docker compose down</code></td><td>Stop + remove containers + network. Safe — volumes are preserved.</td></tr>
+    <tr><td><code>docker compose logs -f</code></td><td>Stream logs from all services. Add service name to filter: <code>logs -f api</code>.</td></tr>
+    <tr><td><code>docker compose exec api bash</code></td><td>Shell into a running service by name.</td></tr>
+  </table>
+</section>
+
+<!-- ========== 11 REGISTRY ========== -->
+<section id="registry">
+  <div class="sec-hdr">
+    <div class="sec-num n-ink">11</div>
+    <h2>Registries — Sharing Your Image</h2>
+  </div>
+
+  <p class="lead">Your built image only exists on your machine. To run it on a server, or share it with a teammate, you push it to a registry — essentially GitHub but for Docker images.</p>
+
+  <div class="analogy">
+    <div class="alabel">📦 Courier service analogy</div>
+    <p>Your built image is a package sitting in your room. <strong>Docker Hub</strong> is the courier depot. You drop off the package (<code>docker push</code>). Anyone with the tracking number (image name + tag) can pick it up from any depot branch anywhere in the world (<code>docker pull</code>). Your production server pulls the same identical package you tested on your laptop.</p>
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-hdr"><span class="code-fn">Full push/pull workflow</span><span class="code-tag">bash</span></div>
+<pre><span class="cm"># 1. Login to Docker Hub</span>
+docker login
+<span class="cm"># Enter your username + password</span>
+
+<span class="cm"># 2. Tag the image with your username (required format)</span>
+docker tag my-app:<span class="num">1.0</span> your-username/my-app:<span class="num">1.0</span>
+
+<span class="cm"># 3. Push to Docker Hub</span>
+docker push your-username/my-app:<span class="num">1.0</span>
+
+<span class="cm"># 4. On any other machine — pull and run it</span>
+docker pull your-username/my-app:<span class="num">1.0</span>
+docker run <span class="fl">-d</span> <span class="fl">-p</span> <span class="num">5000</span>:<span class="num">5000</span> your-username/my-app:<span class="num">1.0</span></pre>
+  </div>
+
+  <table>
+    <tr><th>Registry</th><th>By whom</th><th>Best for</th></tr>
+    <tr><td><code>Docker Hub</code></td><td>Docker Inc.</td><td>Public images, personal projects, free tier</td></tr>
+    <tr><td><code>ECR</code></td><td>Amazon (AWS)</td><td>Production on AWS, integrates with ECS/EKS</td></tr>
+    <tr><td><code>GCR / GAR</code></td><td>Google Cloud</td><td>Production on GCP, integrates with Cloud Run/GKE</td></tr>
+    <tr><td><code>GHCR</code></td><td>GitHub</td><td>Open source projects, CI/CD with GitHub Actions</td></tr>
+  </table>
+</section>
+
+
+<!-- ========== THE STORY ========== -->
+<section id="story">
+  <div class="sec-hdr">
+    <div class="sec-num n-fire">📖</div>
+    <h2>The Story — Arjun's Journey with Docker</h2>
+  </div>
+  <p class="lead">Every concept you've read above — Images, Containers, Dockerfiles, Volumes, Networks, Compose, Registries — plays a real role in the story below. Read it like a novel. The command names and concept names appear in <strong style="color:var(--fire)">orange</strong> as they happen naturally in the story.</p>
+
+  <!-- CHAPTER 1 -->
+  <div class="story-block">
+    <div class="story-scene">📍 Scene 1 · The Problem</div>
+    <h3>Monday morning. Arjun is furious.</h3>
+    <p>Arjun is a junior AI engineer. He spent three days building a Python Flask app that classifies images using a PyTorch model. It works perfectly on his Mac. He zips the code and sends it to his senior, Priya, who is on Ubuntu.</p>
+    <p>Ten minutes later, Priya calls: <em>"Arjun, it's crashing immediately. ModuleNotFoundError: Flask. Also you're on Python 3.11 but our server runs 3.7."</em></p>
+    <p>This is the classic <strong>"it works on my machine"</strong> problem. Different Python versions. Missing libraries. Different operating systems. Arjun's code is correct — but the environment around it is different everywhere.</p>
+    <div class="story-highlight">
+      Priya says: "You need to learn Docker. You don't send the code — you send the whole environment with the code inside it."
+    </div>
+    <p>Arjun opens his terminal and types his first Docker command ever:</p>
+    <div class="story-highlight">
+      <code>docker --version</code> → <em>Docker version 26.0.0</em> → Good, it's installed.
+    </div>
+    <p>Then he runs: <code>docker run hello-world</code> — and sees the famous "Hello from Docker!" message. Docker <strong>pulled</strong> a tiny image from the internet called <code>hello-world</code>, ran it as a <strong>container</strong>, printed the message, and exited — all in 3 seconds. Arjun starts to feel it.</p>
+  </div>
+
+  <!-- CHAPTER 2 -->
+  <div class="story-block">
+    <div class="story-scene">📍 Scene 2 · Writing the Recipe</div>
+    <h3>Arjun writes his first Dockerfile.</h3>
+    <p>Priya explains: <em>"Think of a <strong>Dockerfile</strong> as a cooking recipe. You write instructions: start with these ingredients, do these steps, and the result is a sealed box containing everything your app needs."</em></p>
+    <p>Arjun creates a file called <code>Dockerfile</code> in his project folder — no extension, just that name. He writes:</p>
+    <div class="story-highlight">
+      <code>FROM python:3.11-slim</code> — "Start from a base image that already has Python 3.11 inside. I don't need to install Python myself."<br><br>
+      <code>WORKDIR /app</code> — "Set the working folder inside the container to <code>/app</code>. All my files will live here."<br><br>
+      <code>COPY requirements.txt .</code> — "Copy my requirements file into the container."<br><br>
+      <code>RUN pip install -r requirements.txt</code> — "Install Flask and PyTorch inside the container while building."<br><br>
+      <code>COPY . .</code> — "Now copy the rest of my code."<br><br>
+      <code>CMD ["python", "app.py"]</code> — "When someone starts a container from this, run app.py."
+    </div>
+    <p>Priya tells him something critical about the order: <em>"Notice you copied <code>requirements.txt</code> and ran <code>pip install</code> BEFORE copying the rest of your code. That's intentional."</em></p>
+    <p>She explains: <strong>Docker caches each instruction as a layer.</strong> If you change <code>app.py</code> and rebuild, Docker reuses the cached pip install layer — it doesn't reinstall Flask again. That turns a 3-minute rebuild into a 3-second one. But if you copy all your code first and then run pip install — any code change invalidates the pip cache and you wait 3 minutes every single time.</p>
+    <div class="story-highlight">
+      The golden rule: <strong>put the slow, rarely-changing stuff early. Put your frequently changing code at the bottom.</strong>
+    </div>
+  </div>
+
+  <!-- CHAPTER 3 -->
+  <div class="story-block">
+    <div class="story-scene">📍 Scene 3 · Building the Image</div>
+    <h3>The recipe becomes the sealed box.</h3>
+    <p>Arjun runs: <code>docker build -t my-classifier:1.0 .</code></p>
+    <p>The <code>-t</code> flag gives the <strong>image</strong> a name and version tag. The dot at the end means "use the current folder as the build context — Docker can only see files here." He watches as Docker executes each instruction, one by one, like following a recipe step by step.</p>
+    <p><em>Downloading python:3.11-slim base... Installing Flask... Installing PyTorch... Copying code...</em></p>
+    <p>After 2 minutes, it finishes. He runs <code>docker images</code> and sees:</p>
+    <div class="story-highlight">
+      <code>REPOSITORY &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; TAG &nbsp; IMAGE ID &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SIZE</code><br>
+      <code>my-classifier &nbsp; 1.0 &nbsp; a1b2c3d4e5f6 &nbsp; 1.2GB</code>
+    </div>
+    <p>This is the <strong>image</strong> — a frozen, read-only snapshot. It contains Python 3.11, Flask, PyTorch, and Arjun's entire code — all baked in. He can now send this image to Priya. It will run identically on her Ubuntu machine because the environment is fully self-contained inside the image.</p>
+    <p>He changes one line in <code>app.py</code> and rebuilds. This time: 4 seconds. The pip install layer was cached. <em>Arjun literally says "oh wow" out loud.</em></p>
+  </div>
+
+  <!-- CHAPTER 4 -->
+  <div class="story-block">
+    <div class="story-scene">📍 Scene 4 · The Container Can't Be Reached</div>
+    <h3>Arjun runs the image. The app doesn't respond.</h3>
+    <p>He runs: <code>docker run my-classifier:1.0</code></p>
+    <p>The terminal shows: <em>"Flask running on 0.0.0.0:5000"</em>. He opens a browser and visits <code>localhost:5000</code>. Connection refused.</p>
+    <p>Arjun stares at his screen. The app IS running. Why can't he reach it?</p>
+    <p>Priya explains with the apartment analogy: <em>"A container is an isolated box. It has its own private network. Port 5000 is open INSIDE the container — but nothing connects it to your machine's port 5000. You need to explicitly punch a hole between outside and inside."</em></p>
+    <p>That hole is called <strong>port mapping</strong>. The <code>-p</code> flag.</p>
+    <div class="story-highlight">
+      He runs: <code>docker run -d -p 5000:5000 --name classifier my-classifier:1.0</code><br><br>
+      The <code>-d</code> runs it in the background (detached). The <code>-p 5000:5000</code> maps his machine's port 5000 to the container's port 5000. The <code>--name</code> gives it a friendly name instead of a random ID.
+    </div>
+    <p>He visits <code>localhost:5000</code>. The app responds. He checks the running container with <code>docker ps</code> — sees its name, image, status, and port mapping all listed clearly. He checks logs with <code>docker logs -f classifier</code> — sees real-time output streaming from inside the container. He is in control.</p>
+  </div>
+
+  <!-- CHAPTER 5 -->
+  <div class="story-block">
+    <div class="story-scene">📍 Scene 5 · The Edit-Rebuild Loop is Painful</div>
+    <h3>Every code change requires a full rebuild. Arjun loses 10 minutes per hour.</h3>
+    <p>He changes the confidence threshold in <code>app.py</code>. Stops the container. Rebuilds the image. Starts a new container. Tests it. Repeat. Even with caching, it's 8–10 seconds of friction every single time, plus remembering to stop and restart.</p>
+    <p>Priya teaches him about <strong>bind mounts</strong>.</p>
+    <p><em>"Instead of baking your code into the image during development, just link your code folder directly into the container. The container reads your files live, in real time. When you save a file, the container immediately sees the change — without any rebuild."</em></p>
+    <div class="story-highlight">
+      He runs: <code>docker run -d -p 5000:5000 -v $(pwd):/app my-classifier:1.0</code><br><br>
+      <code>-v $(pwd):/app</code> is the bind mount. <code>$(pwd)</code> is his current folder on his Mac. <code>/app</code> is the folder inside the container. They are now the same folder — a two-way live mirror.
+    </div>
+    <p>He edits <code>app.py</code>, saves it. Flask detects the change and reloads automatically (because he added <code>--reload</code> to the Flask command). He refreshes the browser — the change is there. Zero rebuild time. He can iterate at full speed.</p>
+    <p><em>"This is the bind mount,"</em> Priya says. <em>"Your code lives on your machine. The container just reads it through a portal."</em></p>
+  </div>
+
+  <!-- CHAPTER 6 -->
+  <div class="story-block">
+    <div class="story-scene">📍 Scene 6 · Two Services Need to Talk</div>
+    <h3>Arjun's app needs a database. The containers can't find each other.</h3>
+    <p>The app needs to store prediction results in a PostgreSQL database. Arjun runs a Postgres container: <code>docker run -d --name my-db -e POSTGRES_PASSWORD=secret postgres:16</code></p>
+    <p>He updates <code>app.py</code> to connect to the database at <code>localhost:5432</code>. The app crashes: <em>connection refused to localhost:5432.</em></p>
+    <p>The problem: each container has its own isolated network. "localhost" inside the app container means the app container itself — not Priya's machine, not the database container. The two containers are on separate islands with no bridge between them.</p>
+    <p>Solution: <strong>Docker networks</strong>.</p>
+    <div class="story-highlight">
+      <code>docker network create app-net</code> — creates a private shared network<br><br>
+      Run both containers on this network:<br>
+      <code>docker run -d --name my-db --network app-net -e POSTGRES_PASSWORD=secret postgres:16</code><br>
+      <code>docker run -d --name classifier --network app-net -p 5000:5000 my-classifier:1.0</code>
+    </div>
+    <p>Now here's the magic: Arjun changes the database connection string in his code from <code>localhost:5432</code> to <code>my-db:5432</code>. The container's NAME becomes its hostname on the network. Docker's built-in DNS resolves "my-db" to the database container's internal IP automatically.</p>
+    <p>The app starts. It connects to the database. Predictions are stored. Arjun runs <code>docker network inspect app-net</code> and sees both containers listed with their internal IPs — 172.20.0.2 and 172.20.0.3. But his code never needs to know these IPs. It just says "my-db" and Docker handles the rest.</p>
+    <div class="story-highlight">
+      <strong>The rule:</strong> Never hardcode container IPs. Use container names as hostnames. They're stable and DNS-resolved automatically.
+    </div>
+  </div>
+
+  <!-- CHAPTER 7 -->
+  <div class="story-block">
+    <div class="story-scene">📍 Scene 7 · Database Data Vanishes on Restart</div>
+    <h3>Arjun deletes the database container. All his test data is gone.</h3>
+    <p>He runs <code>docker rm -f my-db</code> to restart fresh. When he creates a new Postgres container, all the stored predictions are gone. Empty database.</p>
+    <p>This is the default container behavior: <strong>ephemeral</strong>. When a container dies, everything written inside it dies with it. The filesystem is temporary.</p>
+    <p>For the database, Arjun needs a <strong>named volume</strong>.</p>
+    <div class="story-highlight">
+      <code>docker volume create pg-data</code><br><br>
+      <code>docker run -d --name my-db --network app-net -v pg-data:/var/lib/postgresql/data -e POSTGRES_PASSWORD=secret postgres:16</code>
+    </div>
+    <p>Now the Postgres data directory is stored in the <code>pg-data</code> named volume — managed by Docker, living outside any container. He deletes the container, creates a new one with the same volume, and the data is still there. The volume outlives any individual container.</p>
+    <p><em>"Named volumes are for data that must survive,"</em> Priya says. <em>"Bind mounts are for your code during development. tmpfs is for secrets that should never touch disk."</em></p>
+  </div>
+
+  <!-- CHAPTER 8 -->
+  <div class="story-block">
+    <div class="story-scene">📍 Scene 8 · The Startup Script is a Nightmare</div>
+    <h3>Arjun writes a 6-step bash script to start his stack. A new teammate breaks it in 2 minutes.</h3>
+    <p>His stack now has three containers: the classifier app, the database, and a Redis cache. Each needs the right flags, in the right order, on the right network. He writes a startup script. His new teammate Rohan runs it on Windows — different path syntax, different shell. It breaks.</p>
+    <p>Priya introduces <strong>Docker Compose</strong>.</p>
+    <p><em>"Docker Compose lets you describe your entire application stack in a single YAML file. One command starts everything, in the right order, on a shared network, with all the right flags — automatically. And it works identically on Mac, Linux, and Windows."</em></p>
+    <div class="story-highlight">
+      Arjun creates <code>docker-compose.yml</code>:<br><br>
+      Every container becomes a <strong>service</strong>. The service name becomes its hostname. The network is created automatically. Build instructions, port mappings, volumes, environment variables — all written once, declaratively.
+    </div>
+    <p>Now Rohan runs a single command: <code>docker compose up -d</code>. All three containers start in 10 seconds. Rohan immediately gets a working environment without understanding a single Docker flag. Arjun runs <code>docker compose logs -f classifier</code> to stream just the classifier service logs. He runs <code>docker compose down</code> at the end of the day — everything stops, network is removed, volumes are safe.</p>
+    <p>The entire team is now running the identical stack. The "it works on my machine" era is over for Arjun's team.</p>
+  </div>
+
+  <!-- CHAPTER 9 -->
+  <div class="story-block">
+    <div class="story-scene">📍 Scene 9 · Deploying to the Cloud</div>
+    <h3>The image on Arjun's laptop needs to reach the production server.</h3>
+    <p>The app is ready. The production server is an AWS EC2 instance. Arjun can't run <code>docker compose up</code> on his laptop and have it deploy to AWS. The image exists only on his machine.</p>
+    <p>He needs to <strong>push it to a registry</strong>.</p>
+    <p>Priya explains: <em>"A registry is like GitHub but for Docker images. You push your image there. The server pulls from there. AWS ECR, Google GCR, Docker Hub — all registries. They're neutral storage. Your laptop pushes, the server pulls. The image is identical."</em></p>
+    <div class="story-highlight">
+      <code>docker login</code> — authenticate to Docker Hub<br>
+      <code>docker tag my-classifier:1.0 arjun/classifier:1.0</code> — give the image the right name format<br>
+      <code>docker push arjun/classifier:1.0</code> — upload to Docker Hub<br><br>
+      On the production server:<br>
+      <code>docker pull arjun/classifier:1.0</code><br>
+      <code>docker run -d -p 80:5000 arjun/classifier:1.0</code>
+    </div>
+    <p>The production server downloads the exact same image — same Python version, same Flask version, same model weights path, same code. Not "a similar version" — the <em>identical</em> binary artifact, guaranteed by the image SHA256 hash. The application runs the first time, without any setup, without any install scripts, without any "it worked on my machine" drama.</p>
+    <p>Priya smiles at the commit message Arjun writes that evening: <em>"Dockerized. Will never send raw code again."</em></p>
+  </div>
+
+  <!-- CHAPTER 10 — EPILOGUE -->
+  <div class="story-block" style="background:linear-gradient(135deg,#16130e 0%,#1a1510 100%);">
+    <div class="story-scene">🏁 Epilogue · Six Months Later</div>
+    <h3>Arjun is now the one teaching Docker.</h3>
+    <p>The AI team has grown. When a new engineer, Kavya, joins, her onboarding is: <em>"Clone the repo. Run <code>docker compose up</code>. You're ready."</em></p>
+    <p>Every concept Arjun learned has a permanent home in his mental model:</p>
+    <div class="story-highlight">
+      📝 <strong>Dockerfile</strong> — the recipe he writes once<br>
+      📦 <strong>Image</strong> — the sealed box it produces<br>
+      📫 <strong>Container</strong> — the live, running instance of that box<br>
+      🚪 <strong>Port mapping</strong> — the tunnel from the outside world into the box<br>
+      💾 <strong>Bind mount</strong> — the portal that keeps dev files live<br>
+      🔒 <strong>Named volume</strong> — the safe where persistent data lives<br>
+      🌐 <strong>Network</strong> — the private Wi-Fi connecting all the boxes<br>
+      🎼 <strong>Compose</strong> — the conductor that starts the whole orchestra with one command<br>
+      ☁️ <strong>Registry</strong> — the depot where images travel from his laptop to the world
+    </div>
+    <p><em>"Docker isn't magic,"</em> Arjun tells Kavya. <em>"It's just a very elegant system of boxes, labels, tunnels, and shared folders. Once you see it, you can't unsee it."</em></p>
+  </div>
+</section>
+
+<!-- ========== VOCAB ========== -->
+<section id="vocab">
+  <div class="sec-hdr">
+    <div class="sec-num n-gold">🗂️</div>
+    <h2>Complete Docker Vocabulary</h2>
+  </div>
+  <p class="lead">Every term you'll encounter in the Advanced AI Engineer Notes — plain English first, technical definition second, memory trick third.</p>
+
+  <table class="vocab">
+    <tr><th>Term</th><th>Plain English</th><th>Memory Trick</th></tr>
+    <tr><td class="word">Dockerfile</td><td class="def">A plain text file with step-by-step instructions to build a Docker image. No extension. Named exactly "Dockerfile".</td><td class="mem">The cake recipe</td></tr>
+    <tr><td class="word">Image</td><td class="def">A read-only, frozen snapshot of your app + OS slice + libraries + code. Can't be modified once built.</td><td class="mem">Blu-ray disc / class definition</td></tr>
+    <tr><td class="word">Container</td><td class="def">A running, live instance of an image. Isolated process with own filesystem and network. Can be started, stopped, deleted.</td><td class="mem">Movie playing / object instance</td></tr>
+    <tr><td class="word">Layer</td><td class="def">Each Dockerfile instruction creates one cached layer. Rebuilds only invalidate layers from the changed instruction onward.</td><td class="mem">Sheet of transparent paper</td></tr>
+    <tr><td class="word">Tag</td><td class="def">Version label on an image. In python:3.11-slim — "3.11-slim" is the tag. "latest" is the default if you don't specify.</td><td class="mem">A Git branch name / version number</td></tr>
+    <tr><td class="word">Build context</td><td class="def">The folder you pass to docker build (usually "."). Docker can only see files inside this folder during build.</td><td class="mem">The ingredients table when cooking</td></tr>
+    <tr><td class="word">Registry</td><td class="def">A server that stores and distributes Docker images. Docker Hub is the public default. ECR, GCR, GHCR are others.</td><td class="mem">GitHub but for Docker images</td></tr>
+    <tr><td class="word">Docker Hub</td><td class="def">The default free public registry. Has official images for Python, Postgres, Redis, Ubuntu, NGINX etc.</td><td class="mem">npm but for whole environments</td></tr>
+    <tr><td class="word">docker build</td><td class="def">Reads the Dockerfile and builds an image. -t gives it a name:tag. The dot is the build context.</td><td class="mem">The oven that bakes the recipe</td></tr>
+    <tr><td class="word">docker run</td><td class="def">Creates and starts a container from an image. Most-used command. -d = background, -p = port, -v = volume, -e = env var.</td><td class="mem">Pressing Play on a Blu-ray</td></tr>
+    <tr><td class="word">docker ps</td><td class="def">Lists running containers. Add -a to see stopped ones too.</td><td class="mem">ps = process status</td></tr>
+    <tr><td class="word">Port mapping</td><td class="def">-p HOST:CONTAINER. Creates a tunnel from your machine's port to the container's port. Without it, container is unreachable.</td><td class="mem">Doorbell that rings a specific apartment</td></tr>
+    <tr><td class="word">Bind mount</td><td class="def">-v /host/path:/ctr/path. Links your actual folder into the container. Changes are instant, two-way. Used in dev.</td><td class="mem">A portal / shared network drive</td></tr>
+    <tr><td class="word">Named volume</td><td class="def">-v vol-name:/ctr/path. Docker-managed storage. Persists after container deletion. Used for databases, model weights.</td><td class="mem">A rented storage unit</td></tr>
+    <tr><td class="word">Network</td><td class="def">A virtual isolated network. Containers on the same network can reach each other by name (service discovery).</td><td class="mem">Private office Wi-Fi</td></tr>
+    <tr><td class="word">Service discovery</td><td class="def">Container names become hostnames on a Docker network. "my-db" resolves to the right IP automatically via Docker DNS.</td><td class="mem">Finding a coworker by Slack handle</td></tr>
+    <tr><td class="word">Docker Compose</td><td class="def">Tool for running multi-container apps. Define everything in docker-compose.yml. One command starts everything.</td><td class="mem">Orchestra conductor</td></tr>
+    <tr><td class="word">docker-compose.yml</td><td class="def">YAML file defining all your services, images/builds, ports, volumes, networks, env vars — your whole stack as code.</td><td class="mem">Stage plan for a concert</td></tr>
+    <tr><td class="word">Daemon (dockerd)</td><td class="def">The background service that does all Docker work. The CLI sends requests to it via REST API. You never interact with it directly.</td><td class="mem">Engine room of a ship</td></tr>
+    <tr><td class="word">ENTRYPOINT vs CMD</td><td class="def">ENTRYPOINT = fixed binary that always runs. CMD = default arguments (overridable at docker run time). Use both together.</td><td class="mem">ENTRYPOINT = the oven, CMD = default temp setting</td></tr>
+    <tr><td class="word">Multi-stage build</td><td class="def">Dockerfile with multiple FROM lines. Build in a fat "builder" stage, copy only artifacts to a lean "runtime" stage. Shrinks image size dramatically.</td><td class="mem">Build in workshop, deliver in small box</td></tr>
+    <tr><td class="word">docker system prune</td><td class="def">Removes stopped containers, unused images, unused networks, build cache. Frees disk space. Add -a to also remove tagged-but-unused images.</td><td class="mem">Empty the recycling bin</td></tr>
+    <tr><td class="word">ECR / GCR / GHCR</td><td class="def">Private registries by AWS / Google / GitHub. Like Docker Hub but private, with access controls and audit logs.</td><td class="mem">Private art gallery vs public museum</td></tr>
+  </table>
+</section>
+
+<!-- ========== READY CHECK ========== -->
+<section id="ready">
+  <div class="sec-hdr">
+    <div class="sec-num n-leaf">✅</div>
+    <h2>Readiness Checklist</h2>
+  </div>
+  <p class="lead">Before opening the Advanced AI Engineer notes, go through this list. Each item should be a confident yes — from hands-on practice, not just reading.</p>
+
+  <h3>Concepts — can you explain these without looking?</h3>
+  <ul class="chk">
+    <li><span class="ck">☐</span>I can explain the "it works on my machine" problem and why Docker solves it</li>
+    <li><span class="ck">☐</span>I can explain the difference between an Image and a Container using an analogy</li>
+    <li><span class="ck">☐</span>I understand that a container is isolated — own filesystem, own network, no access to host by default</li>
+    <li><span class="ck">☐</span>I can explain what each Dockerfile instruction does: FROM, WORKDIR, COPY, RUN, CMD</li>
+    <li><span class="ck">☐</span>I understand why you copy requirements.txt and pip install BEFORE copying your code (cache trick)</li>
+    <li><span class="ck">☐</span>I can explain port mapping — what the left number and right number mean in <code>-p 8080:5000</code></li>
+    <li><span class="ck">☐</span>I know the difference between a bind mount and a named volume and when to use each</li>
+    <li><span class="ck">☐</span>I understand how containers on the same network find each other by name (Docker DNS)</li>
+    <li><span class="ck">☐</span>I understand what Docker Compose solves that raw docker run commands don't</li>
+    <li><span class="ck">☐</span>I know what a registry is — push to share, pull to deploy</li>
+  </ul>
+
+  <h3>Hands-on — have you actually done these?</h3>
+  <ul class="chk">
+    <li><span class="ck">☐</span>Ran <code>docker run hello-world</code> and understood each step of what happened</li>
+    <li><span class="ck">☐</span>Got a shell inside a container with <code>docker run -it python:3.11-slim bash</code></li>
+    <li><span class="ck">☐</span>Wrote a Dockerfile, built it, saw layer caching work on a second build</li>
+    <li><span class="ck">☐</span>Ran a container with <code>-p</code> and accessed the app in your browser</li>
+    <li><span class="ck">☐</span>Used <code>docker ps</code>, <code>docker logs -f</code>, <code>docker stop</code>, <code>docker rm</code></li>
+    <li><span class="ck">☐</span>Used a bind mount (<code>-v $(pwd):/app</code>) and edited a file — saw the change reflect inside the container live</li>
+    <li><span class="ck">☐</span>Wrote a docker-compose.yml, ran <code>docker compose up -d</code>, then <code>docker compose down</code></li>
+  </ul>
+
+  <div class="callout tip" style="margin-top:28px;">
+    <span class="ci">🚀</span>
+    <div><strong>All boxes checked?</strong> You are fully ready for the Advanced AI Engineer notes. GPU containers, multi-stage ML builds, model serving patterns, and interview Q&amp;A will all make natural, intuitive sense — because they're just these same concepts applied to real-world AI workloads. Open the advanced notes now.</div>
+  </div>
+
+  <div class="card" style="text-align:center;padding:32px;margin-top:12px;background:var(--ink);border:none;">
+    <div style="font-size:32px;margin-bottom:10px;">🐳 → 🤖</div>
+    <div style="font-family:var(--head);font-size:20px;font-weight:800;color:#fff;margin-bottom:8px;letter-spacing:-0.5px;">Ready for Advanced Docker for AI Engineers</div>
+    <div style="color:rgba(255,255,255,0.55);font-size:14px;">GPU containers · Model serving · Multi-stage ML builds · CI/CD · Interview Q&amp;A</div>
+  </div>
+</section>
+
+</main>
+
+<script>
+const prog = document.getElementById('prog');
+window.addEventListener('scroll', () => {
+  const pct = window.scrollY / (document.body.scrollHeight - window.innerHeight) * 100;
+  prog.style.width = pct + '%';
+});
+const secs = document.querySelectorAll('section[id]');
+const links = document.querySelectorAll('nav li a');
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if(e.isIntersecting){
+      links.forEach(a => a.classList.toggle('on', a.getAttribute('href') === '#'+e.target.id));
+    }
+  });
+}, {threshold:0.2});
+secs.forEach(s => io.observe(s));
+</script>
+</body>
+</html>
